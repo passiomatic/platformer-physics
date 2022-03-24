@@ -148,16 +148,17 @@ update computer memory =
                 (\_ entity ->
                     entity
                         |> Entity.update computer.keyboard dt
-                        |> integrate level1.walls dt
+                        |> simulate level1.walls dt
+                 --|> contactWithEntities
                 )
                 memory.entities
     in
-    -- TODO resolve contacts
+    -- TODO respond to contacts
     { memory | entities = newEntities }
 
 
-integrate : List Wall -> Float -> Entity -> Entity
-integrate walls dt entity =
+simulate : List Wall -> Float -> Entity -> Entity
+simulate walls dt entity =
     let
         v =
             Vector2.scale dt entity.v
@@ -181,11 +182,11 @@ moveX amount walls entity =
             round newRemainderX
     in
     if move /= 0 then
-        moveXExact move { entity | remainder = vec2 (newRemainderX - toFloat move) entity.remainder.y } walls
+        moveXExact move { entity | remainder = Vector2.setX (newRemainderX - toFloat move) entity.remainder } walls
 
     else
         -- Save remainder for the next frame
-        { entity | remainder = vec2 newRemainderX entity.remainder.y }
+        { entity | remainder = Vector2.setX newRemainderX entity.remainder }
 
 
 moveY : Float -> List Wall -> Entity -> Entity
@@ -198,11 +199,11 @@ moveY amount walls entity =
             round newRemainderY
     in
     if move /= 0 then
-        moveYExact move { entity | remainder = vec2 entity.remainder.x (newRemainderY - toFloat move) } walls
+        moveYExact move { entity | remainder = Vector2.setY (newRemainderY - toFloat move) entity.remainder } walls
 
     else
         -- Save remainder for the next frame
-        { entity | remainder = vec2 entity.remainder.x newRemainderY }
+        { entity | remainder = Vector2.setY newRemainderY entity.remainder }
 
 
 moveXExact : Int -> Entity -> List Wall -> Entity
@@ -210,15 +211,15 @@ moveXExact move entity walls =
     -- Keep moving?
     if move /= 0 then
         let
-            ( sign, dir ) =
-                directionX move
+            sign =
+                direction move
 
             newEntity =
-                { entity | position = Vector2.add dir entity.position }
+                { entity | position = Vector2.add (vec2 sign 0) entity.position }
         in
         if isCollidingWithWalls newEntity walls then
             -- Hit a wall, stop and discard new position
-            { entity | v = vec2 0 entity.v.y }
+            { entity | v = Vector2.setX 0 entity.v }
                 |> clearRemainderX
 
         else
@@ -233,15 +234,15 @@ moveYExact move entity walls =
     -- Keep moving?
     if move /= 0 then
         let
-            ( sign, dir ) =
-                directionY move
+            sign =
+                direction move
 
             newEntity =
-                { entity | position = Vector2.add dir entity.position }
+                { entity | position = Vector2.add (vec2 0 sign) entity.position }
         in
         if isCollidingWithWalls newEntity walls then
             -- Hit a wall, stop and discard new position
-            { entity | v = vec2 entity.v.x 0 }
+            { entity | v = Vector2.setY 0 entity.v }
                 |> clearRemainderY
 
         else
@@ -315,42 +316,15 @@ intersectsBoundingBox rect1 rect2 =
     x1 < x2 + rect2.width && x1 + rect1.width > x2 && y1 < y2 + rect2.height && rect1.height + y1 > y2
 
 
-directionX value =
+direction value =
     if value == 0 then
-        ( 0, Vector2.zero )
+        0
 
     else if value > 0 then
-        ( 1, right )
+        1
 
     else
-        ( -1, left )
-
-
-directionY value =
-    if value == 0 then
-        ( 0, Vector2.zero )
-
-    else if value > 0 then
-        ( 1, up )
-
-    else
-        ( -1, down )
-
-
-right =
-    vec2 1 0
-
-
-left =
-    vec2 -1 0
-
-
-up =
-    vec2 0 1
-
-
-down =
-    vec2 0 -1
+        -1
 
 
 
