@@ -14,6 +14,8 @@ type alias Memory =
     { entities : Dict Int Entity
     , gems : Int
     , debug : Bool
+    , lastLogTime : Int
+    , lastVelocity : Vec2
     }
 
 
@@ -34,6 +36,8 @@ initialModel =
     { entities = entities
     , gems = 0
     , debug = True
+    , lastLogTime = 0
+    , lastVelocity = Vector2.zero
     }
 
 
@@ -53,11 +57,17 @@ viewScale =
     2
 
 
+logTimeInterval =
+    100 -- ms 
+
+
 view : Computer -> Memory -> List Shape
-view computer { debug, entities } =
+view computer { debug, lastVelocity, entities } =
     [ renderBackground computer.screen
     , renderScene debug level1.walls entities
         |> scale viewScale
+    , Diagnostic.vector green lastVelocity
+        |> moveDown 100
     ]
 
 
@@ -71,7 +81,7 @@ renderScene debug walls entities =
             Dict.map
                 (\_ entity ->
                     case entity.type_ of
-                        Player ->
+                        Player _ ->
                             renderPlayer debug entity
 
                         Gem ->
@@ -138,6 +148,17 @@ fixedDeltaTime =
 update : Computer -> Memory -> Memory
 update computer memory =
     let
+        (lastVelocity, lastLogTime)  =
+            if computer.time.now - memory.lastLogTime > logTimeInterval then
+                (Dict.get 0 memory.entities
+                    |> Maybe.map .v
+                    |> Maybe.withDefault Vector2.zero
+                , computer.time.now
+                ) 
+
+            else
+                (memory.lastVelocity, memory.lastLogTime)
+
         -- TODO fix dt
         dt =
             min fixedDeltaTime (toFloat computer.time.delta / 1000)
@@ -147,14 +168,14 @@ update computer memory =
             Dict.map
                 (\_ entity ->
                     entity
-                        |> Entity.update computer.keyboard dt
+                        |> Entity.update computer dt
                         |> simulate level1.walls dt
                  --|> contactWithEntities
                 )
                 memory.entities
     in
     -- TODO respond to contacts
-    { memory | entities = newEntities }
+    { memory | entities = newEntities, lastVelocity = lastVelocity, lastLogTime = lastLogTime }
 
 
 simulate : List Wall -> Float -> Entity -> Entity

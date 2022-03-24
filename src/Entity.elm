@@ -1,4 +1,4 @@
-module Entity exposing (Entity, EntityType(..), fromSpawns, update)
+module Entity exposing (Entity, EntityType(..), PlayerData, fromSpawns, update)
 
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Dict exposing (Dict)
@@ -6,9 +6,14 @@ import Playground exposing (..)
 import Vector2.Extra as Vector2
 
 
+type alias PlayerData =
+    { lastJumpTime : Int
+    }
+
+
 type EntityType
     = Gem
-    | Player
+    | Player PlayerData
 
 
 type alias Entity =
@@ -36,20 +41,24 @@ gravity =
     -1000
 
 
-playerMaxRunVelocity =
+playerRunVelocity =
     270
 
 
 playerRunAcceleration =
-    700
+    650
 
 
-playerJumpSpeed =
+playerJumpVelocity =
     190
 
 
-playerMaxFallVelocity =
+playerFallVelocity =
     220
+
+
+playerNextJumpInterval =
+    150
 
 
 fromSpawns : List Spawn -> Dict Int Entity
@@ -77,7 +86,7 @@ spawn spawn_ nextId =
             }
     in
     case spawn_.type_ of
-        Player ->
+        Player _ ->
             ( 0, initPlayer entity )
 
         Gem ->
@@ -90,7 +99,6 @@ initPlayer entity =
         , remainder = Vector2.zero
         , width = 15
         , height = 18
-        , type_ = Player
     }
 
 
@@ -98,44 +106,50 @@ initGem entity =
     { entity
         | width = 10
         , height = 10
-        , type_ = Gem
     }
 
 
-update : Keyboard -> Float -> Entity -> Entity
-update keyboard dt entity =
+update : Computer -> Float -> Entity -> Entity
+update { keyboard, time } dt entity =
     case entity.type_ of
-        Player ->
+        Player data ->
             let
-                dir =
-                    inputDirection keyboard entity.dir
+                jumpBoostX =
+                    -- If left or right is held at the moment of a jump, horizontal speed boost is applied
+                    if keyboard.space then
+                        30 * (toXY keyboard |> Tuple.first) 
+
+                    else
+                        0
 
                 -- Horizontal control
                 maxRunVelocity =
                     if keyboard.left then
-                        -playerMaxRunVelocity
+                        -playerRunVelocity
 
                     else if keyboard.right then
-                        playerMaxRunVelocity
+                        playerRunVelocity
 
                     else
                         0
 
                 vx =
-                    approach entity.v.x maxRunVelocity (playerRunAcceleration * dt)
+                    approach (entity.v.x + jumpBoostX)  maxRunVelocity (playerRunAcceleration * dt)
 
                 -- Vertical control
-                vy =
-                    -- Jumping?
+                ( jumpTime, vy ) =
+                    -- Jump?
+                    --if keyboard.space && entity.v.y < 0 && (time.now - data.lastJumpTime) > playerNextJumpInterval then
                     if keyboard.space then
-                        playerJumpSpeed
+                        ( time.now, playerJumpVelocity )
 
                     else
-                        approach entity.v.y playerMaxFallVelocity (gravity * dt)
+                        ( data.lastJumpTime, approach entity.v.y playerFallVelocity (gravity * dt) )
             in
             { entity
                 | v = vec2 vx vy
-                , dir = dir
+                , dir = inputDirection keyboard entity.dir
+                , type_ = Player (PlayerData jumpTime)
             }
 
         -- Other entities
@@ -159,11 +173,11 @@ inputDirection keyboard dir =
         dir
 
 
-{-| Approach a target value increasing or decreasing by maxDelta steps.
+{-| Approach a target value increasing or decreasing by delta steps.
 -}
-approach value target maxDelta =
+approach value target delta =
     if value > target then
-        max (value - maxDelta) target
+        max (value - delta) target
 
     else
-        min (value + maxDelta) target
+        min (value + delta) target
