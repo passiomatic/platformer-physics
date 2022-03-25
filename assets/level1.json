@@ -1,4 +1,4 @@
-{ "backgroundcolor":"#0000ff",
+{ "backgroundcolor":"#66ccff",
  "compressionlevel":-1,
  "editorsettings":
     {
@@ -7,7 +7,7 @@
          "target":"."
         }
     },
- "height":28,
+ "height":30,
  "infinite":false,
  "layers":[
         {
@@ -17,24 +17,6 @@
          "objects":[
                 {
                  "height":0,
-                 "id":37,
-                 "name":"Player",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"Dir",
-                         "type":"string",
-                         "value":"W"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":120,
-                 "y":408
-                }, 
-                {
-                 "height":0,
                  "id":161,
                  "name":"Gem",
                  "point":true,
@@ -42,8 +24,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":704,
-                 "y":328
+                 "x":576,
+                 "y":416
                 }, 
                 {
                  "height":0,
@@ -54,8 +36,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":268,
-                 "y":380
+                 "x":208,
+                 "y":368
                 }, 
                 {
                  "height":0,
@@ -66,8 +48,32 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":520,
-                 "y":328
+                 "x":400,
+                 "y":368
+                }, 
+                {
+                 "height":0,
+                 "id":200,
+                 "name":"Player",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":432
+                }, 
+                {
+                 "height":0,
+                 "id":201,
+                 "name":"Gem",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":48,
+                 "y":416
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -82,7 +88,7 @@
          "objects":[
                 {
                  "height":0,
-                 "id":194,
+                 "id":195,
                  "name":"",
                  "polyline":[
                         {
@@ -90,27 +96,95 @@
                          "y":0
                         }, 
                         {
-                         "x":228,
+                         "x":256,
                          "y":0
-                        }, 
-                        {
-                         "x":228,
-                         "y":-40
-                        }, 
-                        {
-                         "x":384,
-                         "y":-40
-                        }, 
-                        {
-                         "x":384,
-                         "y":-84
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":4,
-                 "y":452
+                 "x":176,
+                 "y":464
+                }, 
+                {
+                 "height":0,
+                 "id":196,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":128,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":32,
+                 "y":432
+                }, 
+                {
+                 "height":0,
+                 "id":197,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":160,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":448,
+                 "y":432
+                }, 
+                {
+                 "height":0,
+                 "id":198,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":128,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":144,
+                 "y":384
+                }, 
+                {
+                 "height":0,
+                 "id":199,
+                 "name":"",
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":128,
+                         "y":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":336,
+                 "y":384
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -119,7 +193,7 @@
          "y":0
         }],
  "nextlayerid":8,
- "nextobjectid":195,
+ "nextobjectid":202,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",
@@ -128,5 +202,5 @@
  "tilewidth":16,
  "type":"map",
  "version":1.4,
- "width":58
+ "width":40
 }
