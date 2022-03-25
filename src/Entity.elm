@@ -15,7 +15,7 @@ import Vector2.Extra as Vector2
 
 
 type alias Wall =
-    { position : Vec2, width : Float, height : Float }
+    { p1 : Vec2, p2 : Vec2, normal : Vec2 }
 
 
 type alias PlayerData =
@@ -68,6 +68,7 @@ playerJumpVelocity =
 
 playerFallVelocity =
     430
+
 
 playerNextJumpInterval =
     150
@@ -134,7 +135,7 @@ update { keyboard, time } dt entity =
                 axes =
                     toXY keyboard
 
-                shouldJump = 
+                shouldJump =
                     keyboard.space && isOnGround entity
 
                 jumpBoostX =
@@ -155,7 +156,7 @@ update { keyboard, time } dt entity =
                 -- Vertical control
                 ( jumpTime, vy ) =
                     if shouldJump then
-                    --if keyboard.space && entity.v.y < 0 && (time.now - data.lastJumpTime) > playerNextJumpInterval then
+                        --if keyboard.space && entity.v.y < 0 && (time.now - data.lastJumpTime) > playerNextJumpInterval then
                         ( time.now, playerJumpVelocity )
 
                     else

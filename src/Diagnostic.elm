@@ -23,10 +23,11 @@ hitbox { width, height, position } =
         |> move position.x position.y
 
 
-wall : { a | position : Vec2, width : Float, height : Float } -> Shape
-wall { position, width, height } =
-    rectangle darkGray width height
-        |> move position.x position.y
+{-| Draw a wall.
+-}
+wall : { a | p1 : Vec2, p2 : Vec2, normal : Vec2 } -> Shape
+wall value =
+    segment darkGray value
 
 
 segment : Color -> { a | p1 : Vec2, p2 : Vec2 } -> Shape
@@ -49,6 +50,8 @@ segment color { p1, p2 } =
         |> rotate angle
 
 
+{-| Draw vector value with a label.
+-}
 vector : Color -> String -> Vec2 -> Shape
 vector color label value =
     let

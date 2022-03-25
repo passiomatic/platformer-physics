@@ -125,7 +125,7 @@ isCollidingWithWalls : Entity -> List Wall -> Bool
 isCollidingWithWalls entity walls =
     case walls of
         wall :: rest ->
-            if intersectsBoundingBox entity wall then
+            if intersectsSegment entity wall then
                 True
 
             else
@@ -175,6 +175,26 @@ intersectsBoundingBox rect1 rect2 =
             startingPoint rect2.position.y rect2.height
     in
     x1 < x2 + rect2.width && x1 + rect1.width > x2 && y1 < y2 + rect2.height && rect1.height + y1 > y2
+
+
+intersectsSegment : { a | position : Vec2, width : Float, height : Float } -> { b | p1 : Vec2, p2 : Vec2 } -> Bool
+intersectsSegment rect { p1, p2 } =
+    let
+        startingPoint centerPoint length =
+            centerPoint - (length / 2)
+
+        x1 =
+            startingPoint rect.position.x rect.width
+
+        y1 =
+            startingPoint rect.position.y rect.height
+
+    in
+    -- Check if completely outside 
+    if (p1.x <= x1 && p2.x <= x1) || (p1.y <= y1 && p2.y <= y1) || (p1.x >= x1 + rect.width && p2.x >= x1 + rect.width) || (p1.y >= y1 + rect.height && p2.y >=  y1 + rect.height ) then 
+        False
+    else 
+        True
 
 
 direction value =
