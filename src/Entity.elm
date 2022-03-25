@@ -1,9 +1,21 @@
-module Entity exposing (Entity, EntityType(..), PlayerData, fromSpawns, getPlayer, update)
+module Entity exposing
+    ( Entity
+    , EntityType(..)
+    , PlayerData
+    , Wall
+    , fromSpawns
+    , getPlayer
+    , update
+    )
 
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Dict exposing (Dict)
 import Playground exposing (..)
 import Vector2.Extra as Vector2
+
+
+type alias Wall =
+    { position : Vec2, width : Float, height : Float }
 
 
 type alias PlayerData =
