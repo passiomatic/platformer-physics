@@ -126,8 +126,8 @@ isCollidingWithWalls entity walls =
     case walls of
         wall :: rest ->
             if intersectsSegment entity wall then
-                True
-
+                -- Along or against the wall normal?
+                Vector2.dot entity.v wall.normal < 0
             else
                 -- Keep checking
                 isCollidingWithWalls entity rest
