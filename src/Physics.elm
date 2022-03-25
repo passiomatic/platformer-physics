@@ -21,10 +21,6 @@ simulate walls dt entity =
         |> moveY v.y walls
 
 
-
--- HELPERS
-
-
 moveX : Float -> List Wall -> Entity -> Entity
 moveX amount walls entity =
     let
@@ -128,6 +124,7 @@ isCollidingWithWalls entity walls =
             if intersectsSegment entity wall then
                 -- Along or against the wall normal?
                 Vector2.dot entity.v wall.normal < 0
+
             else
                 -- Keep checking
                 isCollidingWithWalls entity rest
@@ -159,9 +156,6 @@ contactWithEntities entity others contacts =
 intersectsBoundingBox : { a | position : Vec2, width : Float, height : Float } -> { b | position : Vec2, width : Float, height : Float } -> Bool
 intersectsBoundingBox rect1 rect2 =
     let
-        startingPoint centerPoint length =
-            centerPoint - (length / 2)
-
         x1 =
             startingPoint rect1.position.x rect1.width
 
@@ -180,21 +174,22 @@ intersectsBoundingBox rect1 rect2 =
 intersectsSegment : { a | position : Vec2, width : Float, height : Float } -> { b | p1 : Vec2, p2 : Vec2 } -> Bool
 intersectsSegment rect { p1, p2 } =
     let
-        startingPoint centerPoint length =
-            centerPoint - (length / 2)
-
         x1 =
             startingPoint rect.position.x rect.width
 
         y1 =
             startingPoint rect.position.y rect.height
-
     in
-    -- Check if completely outside 
-    if (p1.x <= x1 && p2.x <= x1) || (p1.y <= y1 && p2.y <= y1) || (p1.x >= x1 + rect.width && p2.x >= x1 + rect.width) || (p1.y >= y1 + rect.height && p2.y >=  y1 + rect.height ) then 
+    -- Check if completely outside
+    if (p1.x <= x1 && p2.x <= x1) || (p1.y <= y1 && p2.y <= y1) || (p1.x >= x1 + rect.width && p2.x >= x1 + rect.width) || (p1.y >= y1 + rect.height && p2.y >= y1 + rect.height) then
         False
-    else 
+
+    else
         True
+
+
+startingPoint centerPoint length =
+    centerPoint - (length / 2)
 
 
 direction value =
