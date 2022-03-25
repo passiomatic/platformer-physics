@@ -210,7 +210,7 @@ moveX amount walls entity =
             round newRemainderX
     in
     if move /= 0 then
-        moveXExact move { entity | remainder = Vector2.setX (newRemainderX - toFloat move) entity.remainder } walls
+        moveXExact move walls { entity | remainder = Vector2.setX (newRemainderX - toFloat move) entity.remainder }
 
     else
         -- Save remainder for the next frame
@@ -227,15 +227,15 @@ moveY amount walls entity =
             round newRemainderY
     in
     if move /= 0 then
-        moveYExact move { entity | remainder = Vector2.setY (newRemainderY - toFloat move) entity.remainder } walls
+        moveYExact move walls { entity | remainder = Vector2.setY (newRemainderY - toFloat move) entity.remainder }
 
     else
         -- Save remainder for the next frame
         { entity | remainder = Vector2.setY newRemainderY entity.remainder }
 
 
-moveXExact : Int -> Entity -> List Wall -> Entity
-moveXExact move entity walls =
+moveXExact : Int -> List Wall -> Entity -> Entity
+moveXExact move walls entity =
     -- Keep moving?
     if move /= 0 then
         let
@@ -246,21 +246,23 @@ moveXExact move entity walls =
                 { entity | position = Vector2.add (vec2 sign 0) entity.position }
         in
         if isCollidingWithWalls newEntity walls then
-            -- Hit a wall, stop and discard new position
+            -- Hit a wall, stop along the X axis and discard new position
             { entity
                 | v = Vector2.setX 0 entity.v
+                , lastContact = Vector2.setX (toFloat move) entity.lastContact
             }
                 |> clearRemainderX
 
         else
-            moveXExact (move - sign) newEntity walls
+            moveXExact (move - sign) walls newEntity
 
     else
-        entity
+        -- No contacts, clear value along X
+        { entity | lastContact = Vector2.setX 0 entity.lastContact }
 
 
-moveYExact : Int -> Entity -> List Wall -> Entity
-moveYExact move entity walls =
+moveYExact : Int -> List Wall -> Entity -> Entity
+moveYExact move walls entity =
     -- Keep moving?
     if move /= 0 then
         let
@@ -271,7 +273,7 @@ moveYExact move entity walls =
                 { entity | position = Vector2.add (vec2 0 sign) entity.position }
         in
         if isCollidingWithWalls newEntity walls then
-            -- Hit a wall, stop and discard new position
+            -- Hit a wall, stop along the Y axis and discard new position
             { entity
                 | v = Vector2.setY 0 entity.v
                 , lastContact = Vector2.setY (toFloat move) entity.lastContact
@@ -279,19 +281,19 @@ moveYExact move entity walls =
                 |> clearRemainderY
 
         else
-            moveYExact (move - sign) newEntity walls
+            moveYExact (move - sign) walls newEntity
 
     else
-        -- No contacts, clear value
+        -- No contacts, clear value along Y
         { entity | lastContact = Vector2.setY 0 entity.lastContact }
 
 
 clearRemainderX entity =
-    { entity | remainder = vec2 0 entity.remainder.y }
+    { entity | remainder = Vector2.setX 0 entity.remainder }
 
 
 clearRemainderY entity =
-    { entity | remainder = vec2 entity.remainder.x 0 }
+    { entity | remainder = Vector2.setY 0 entity.remainder }
 
 
 isCollidingWithWalls : Entity -> List Wall -> Bool
