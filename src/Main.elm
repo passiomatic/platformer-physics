@@ -51,22 +51,29 @@ logTimeInterval =
     100
 
 
-
--- ms
-
-
 view : Computer -> Memory -> List Shape
-view computer { debug, lastVelocity, lastContact, entities } =
+view computer memory =
     [ renderBackground computer.screen
-    , renderScene debug level1.walls entities
-        |> scale viewScale
-    , Diagnostic.vector green lastVelocity
-        |> moveDown 100
-        |> moveLeft 100
-    , Diagnostic.vector yellow lastContact
-        |> moveDown 100
-        |> moveRight 100
+    , renderScene memory.debug level1.walls memory.entities
+    , renderPhysics memory
     ]
+
+
+renderPhysics : Memory -> Shape
+renderPhysics memory =
+    (if memory.debug then
+        [ Diagnostic.vector green "v" memory.lastVelocity
+            |> moveDown 100
+            |> moveLeft 150
+        , Diagnostic.vector yellow "lastContact" memory.lastContact
+            |> moveDown 100
+            |> moveRight 150
+        ]
+
+     else
+        []
+    )
+        |> group
 
 
 renderScene : Bool -> List Wall -> Dict Int Entity -> Shape
@@ -88,13 +95,13 @@ renderScene debug walls entities =
                 entities
                 |> Dict.values
     in
-    List.append entities_ (renderOrigin :: walls_)
+    List.append walls_ entities_
         |> group
+        |> scale viewScale
 
 
 renderPlayer debug entity =
-    [ Diagnostic.body entity
-    , polygon blue
+    [ polygon blue
         [ ( -5, 7 )
         , ( 5, 7 )
         , ( 8, 0 )
@@ -105,12 +112,12 @@ renderPlayer debug entity =
         |> scaleX entity.side
         |> move entity.position.x entity.position.y
     ]
+        |> Diagnostic.consIf debug (Diagnostic.hitbox entity)
         |> group
 
 
 renderGem debug entity =
-    [ Diagnostic.body entity
-    , polygon red
+    [ polygon red
         [ ( -13, 5 )
         , ( -5, 10 )
         , ( 5, 10 )
@@ -119,11 +126,12 @@ renderGem debug entity =
         ]
         |> move entity.position.x entity.position.y
     ]
+        |> Diagnostic.consIf debug (Diagnostic.hitbox entity)
         |> group
 
 
-renderOrigin =
-    circle lightBlue 2
+-- renderOrigin =
+--     circle lightBlue 2
 
 
 renderBackground screen =

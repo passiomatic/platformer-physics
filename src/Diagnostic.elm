@@ -1,8 +1,8 @@
 module Diagnostic exposing
-    ( body
-    , entity
+    ( consIf
+    , hitbox
     , vector
-    , wall, consIf
+    , wall
     )
 
 import AltMath.Vector2 as Vec2 exposing (Vec2, vec2)
@@ -13,10 +13,11 @@ import Vector2.Extra as Vec2
 
 -- SHAPES
 
-{-| Draw contact box for given entity.
+
+{-| Draw hitbox for given entity.
 -}
-body : { a | width : Float, height : Float, position : Vec2 } -> Shape
-body { width, height, position } =
+hitbox : { a | width : Float, height : Float, position : Vec2 } -> Shape
+hitbox { width, height, position } =
     rectangle yellow width height
         |> fade 0.6
         |> move position.x position.y
@@ -48,8 +49,8 @@ segment color { p1, p2 } =
         |> rotate angle
 
 
-vector : Color -> Vec2 -> Shape
-vector color value =
+vector : Color -> String -> Vec2 -> Shape
+vector color label value =
     let
         angle =
             atan2 value.y value.x * 180 / pi
@@ -70,16 +71,8 @@ vector color value =
         |> group
         |> move (value.x / 2) (value.y / 2)
         |> rotate angle
-    , words color (Vec2.toString value)
+    , words color (label ++ " " ++ Vec2.toString value)
         |> moveDown 50
-    ]
-        |> group
-
-
-entity : { a | v : Vec2 } -> Shape
-entity value =
-    [ vector green value.v
-        |> moveDown 250
     ]
         |> group
 
