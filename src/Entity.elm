@@ -51,7 +51,7 @@ type alias Spawn =
 
 
 gravity =
-    -1000
+    -1100
 
 
 playerRunVelocity =
@@ -63,12 +63,11 @@ playerRunAcceleration =
 
 
 playerJumpVelocity =
-    190
+    350
 
 
 playerFallVelocity =
-    220
-
+    430
 
 playerNextJumpInterval =
     150
@@ -135,9 +134,12 @@ update { keyboard, time } dt entity =
                 axes =
                     toXY keyboard
 
+                shouldJump = 
+                    keyboard.space && isOnGround entity
+
                 jumpBoostX =
                     -- If left or right is held at the moment of a jump, horizontal speed boost is applied
-                    if keyboard.space then
+                    if shouldJump then
                         30 * Tuple.first axes
 
                     else
@@ -152,9 +154,8 @@ update { keyboard, time } dt entity =
 
                 -- Vertical control
                 ( jumpTime, vy ) =
-                    -- Jump?
+                    if shouldJump then
                     --if keyboard.space && entity.v.y < 0 && (time.now - data.lastJumpTime) > playerNextJumpInterval then
-                    if keyboard.space then
                         ( time.now, playerJumpVelocity )
 
                     else
