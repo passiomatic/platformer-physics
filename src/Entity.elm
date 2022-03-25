@@ -2,6 +2,7 @@ module Entity exposing
     ( Entity
     , EntityType(..)
     , PlayerData
+    , Spawn
     , Wall
     , fromSpawns
     , getPlayer
