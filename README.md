@@ -2,7 +2,7 @@
 
 This is a proof-of-concept application to explore several concepts described by Maddy Thorson's post [_Celeste and TowerFall Physics_][c].
 
-All the physics are handled by two types: walls and entities. Walls are the collidable level geometry. Entities are physics objects, such as players, arrows, monsters, treasure chests, etc. 
+All the physics in the system are handled by two types: `Wall` and `Entity`. Walls are the collidable level geometry. Entities are physics objects, such as players, arrows, monsters, treasure chests, etc. 
 
 Anything that has to move and interact with the level geometry is an entity. The system has a few simple constraints:
 
@@ -12,9 +12,11 @@ Anything that has to move and interact with the level geometry is an entity. The
 
 For this demo the game graphics and logic have been kept to a minimun to focus on entity movement and collision detection/response. 
 
+If you want richer graphics while using the [WebGL Playground][w] package take a look at [Sunny Land][sl].
+
 ## Run locally
 
-Clone the repo and run Elm's `reactor`:
+Clone the repo and run Elm's `reactor` command:
 
 ```
 elm reactor
@@ -38,3 +40,5 @@ Other interesting blog posts have been studied to complete the implementation:
 [4]: https://github.com/MaddyThorson/StrawberryBF
 [p]: https://github.com/MaddyThorson/StrawberryBF/blob/bae5798f070e10f11bb633e5bc206e33859df928/SampleGame/src/Entities/Player.bf
 [a]: https://github.com/MaddyThorson/StrawberryBF/blob/bae5798f070e10f11bb633e5bc206e33859df928/SampleGame/src/Physics/Actor.bf
+[w]: https://package.elm-lang.org/packages/justgook/webgl-playground/latest/
+[sl]: https://github.com/passiomatic/sunny-land
