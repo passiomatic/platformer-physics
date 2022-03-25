@@ -41,24 +41,16 @@ initialModel =
     }
 
 
-initPlayer =
-    { remainder = Vector2.zero
-    , position = vec2 100 50
-    , v = Vector2.zero
-    , width = 15
-    , height = 18
-    , id = 0
-    , type_ = Player
-    , dir = 1 -- Looking East
-    }
-
-
 viewScale =
     2
 
 
 logTimeInterval =
-    100 -- ms 
+    100
+
+
+
+-- ms
 
 
 view : Computer -> Memory -> List Shape
@@ -104,7 +96,7 @@ renderPlayer debug entity =
         , ( 5, -7 )
         , ( -5, -7 )
         ]
-        |> scaleX entity.dir
+        |> scaleX entity.side
         |> move entity.position.x entity.position.y
     ]
         |> group
@@ -148,16 +140,16 @@ fixedDeltaTime =
 update : Computer -> Memory -> Memory
 update computer memory =
     let
-        (lastVelocity, lastLogTime)  =
+        ( lastVelocity, lastLogTime ) =
             if computer.time.now - memory.lastLogTime > logTimeInterval then
-                (Dict.get 0 memory.entities
+                ( Dict.get 0 memory.entities
                     |> Maybe.map .v
                     |> Maybe.withDefault Vector2.zero
                 , computer.time.now
-                ) 
+                )
 
             else
-                (memory.lastVelocity, memory.lastLogTime)
+                ( memory.lastVelocity, memory.lastLogTime )
 
         -- TODO fix dt
         dt =

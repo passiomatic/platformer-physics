@@ -24,7 +24,7 @@ type alias Entity =
     , height : Float
     , id : Int
     , type_ : EntityType
-    , dir : Float
+    , side : Float
     }
 
 
@@ -32,7 +32,7 @@ type alias Entity =
 -}
 type alias Spawn =
     { position : Vec2
-    , dir : Float
+    , side : Float
     , type_ : EntityType
     }
 
@@ -79,7 +79,7 @@ spawn spawn_ nextId =
             , v = Vector2.zero
             , remainder = Vector2.zero
             , position = spawn_.position
-            , dir = spawn_.dir
+            , side = spawn_.side
             , type_ = spawn_.type_
             , width = 10
             , height = 10
@@ -97,8 +97,8 @@ initPlayer entity =
     { entity
         | id = 0 -- Hardcode id
         , remainder = Vector2.zero
-        , width = 15
-        , height = 18
+        , width = 13
+        , height = 14
     }
 
 
@@ -144,7 +144,7 @@ update { keyboard, time } dt entity =
             in
             { entity
                 | v = vec2 vx vy
-                , dir = side keyboard entity.dir
+                , side = side keyboard entity.side
                 , type_ = Player (PlayerData jumpTime)
             }
 
