@@ -16,6 +16,7 @@ type alias Memory =
     , debug : Bool
     , lastLogTime : Int
     , lastVelocity : Vec2
+    , lastContact : Vec2
     }
 
 
@@ -38,6 +39,7 @@ initialModel =
     , debug = True
     , lastLogTime = 0
     , lastVelocity = Vector2.zero
+    , lastContact = Vector2.zero
     }
 
 
@@ -54,12 +56,16 @@ logTimeInterval =
 
 
 view : Computer -> Memory -> List Shape
-view computer { debug, lastVelocity, entities } =
+view computer { debug, lastVelocity, lastContact, entities } =
     [ renderBackground computer.screen
     , renderScene debug level1.walls entities
         |> scale viewScale
     , Diagnostic.vector green lastVelocity
         |> moveDown 100
+        |> moveLeft 100
+    , Diagnostic.vector yellow lastContact
+        |> moveDown 100
+        |> moveRight 100
     ]
 
 
@@ -140,17 +146,6 @@ fixedDeltaTime =
 update : Computer -> Memory -> Memory
 update computer memory =
     let
-        ( lastVelocity, lastLogTime ) =
-            if computer.time.now - memory.lastLogTime > logTimeInterval then
-                ( Dict.get 0 memory.entities
-                    |> Maybe.map .v
-                    |> Maybe.withDefault Vector2.zero
-                , computer.time.now
-                )
-
-            else
-                ( memory.lastVelocity, memory.lastLogTime )
-
         -- TODO fix dt
         dt =
             min fixedDeltaTime (toFloat computer.time.delta / 1000)
@@ -167,7 +162,27 @@ update computer memory =
                 memory.entities
     in
     -- TODO respond to contacts
-    { memory | entities = newEntities, lastVelocity = lastVelocity, lastLogTime = lastLogTime }
+    { memory
+        | entities = newEntities
+    }
+        |> logValues computer
+
+
+logValues computer memory =
+    if memory.debug && computer.time.now - memory.lastLogTime > logTimeInterval then
+        case Entity.getPlayer memory.entities of
+            Just player ->
+                { memory
+                    | lastVelocity = player.v
+                    , lastContact = player.lastContact
+                    , lastLogTime = computer.time.now
+                }
+
+            Nothing ->
+                memory
+
+    else
+        memory
 
 
 simulate : List Wall -> Float -> Entity -> Entity
@@ -232,7 +247,9 @@ moveXExact move entity walls =
         in
         if isCollidingWithWalls newEntity walls then
             -- Hit a wall, stop and discard new position
-            { entity | v = Vector2.setX 0 entity.v }
+            { entity
+                | v = Vector2.setX 0 entity.v
+            }
                 |> clearRemainderX
 
         else
@@ -255,14 +272,18 @@ moveYExact move entity walls =
         in
         if isCollidingWithWalls newEntity walls then
             -- Hit a wall, stop and discard new position
-            { entity | v = Vector2.setY 0 entity.v }
+            { entity
+                | v = Vector2.setY 0 entity.v
+                , lastContact = Vector2.setY (toFloat move) entity.lastContact
+            }
                 |> clearRemainderY
 
         else
             moveYExact (move - sign) newEntity walls
 
     else
-        entity
+        -- No contacts, clear value
+        { entity | lastContact = Vector2.setY 0 entity.lastContact }
 
 
 clearRemainderX entity =

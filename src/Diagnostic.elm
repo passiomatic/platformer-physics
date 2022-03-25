@@ -2,7 +2,7 @@ module Diagnostic exposing
     ( body
     , entity
     , vector
-    , wall
+    , wall, consIf
     )
 
 import AltMath.Vector2 as Vec2 exposing (Vec2, vec2)

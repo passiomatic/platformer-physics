@@ -1,4 +1,4 @@
-module Entity exposing (Entity, EntityType(..), PlayerData, fromSpawns, update)
+module Entity exposing (Entity, EntityType(..), PlayerData, fromSpawns, getPlayer, update)
 
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Dict exposing (Dict)
@@ -20,6 +20,7 @@ type alias Entity =
     { remainder : Vec2
     , position : Vec2
     , v : Vec2
+    , lastContact : Vec2
     , width : Float
     , height : Float
     , id : Int
@@ -78,6 +79,7 @@ spawn spawn_ nextId =
             { id = nextId
             , v = Vector2.zero
             , remainder = Vector2.zero
+            , lastContact = Vector2.zero
             , position = spawn_.position
             , side = spawn_.side
             , type_ = spawn_.type_
@@ -102,6 +104,10 @@ initPlayer entity =
     }
 
 
+getPlayer entities =
+    Dict.get 0 entities
+
+
 initGem entity =
     { entity
         | width = 10
@@ -114,8 +120,8 @@ update { keyboard, time } dt entity =
     case entity.type_ of
         Player data ->
             let
-                axes = 
-                    toXY keyboard 
+                axes =
+                    toXY keyboard
 
                 jumpBoostX =
                     -- If left or right is held at the moment of a jump, horizontal speed boost is applied
@@ -151,6 +157,10 @@ update { keyboard, time } dt entity =
         -- Other entities
         _ ->
             entity
+
+
+isOnGround entity =
+    entity.lastContact.y < 0
 
 
 {-| Figure out entity "side" for render purposes,
