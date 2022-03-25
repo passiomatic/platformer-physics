@@ -114,27 +114,23 @@ update { keyboard, time } dt entity =
     case entity.type_ of
         Player data ->
             let
+                axes = 
+                    toXY keyboard 
+
                 jumpBoostX =
                     -- If left or right is held at the moment of a jump, horizontal speed boost is applied
                     if keyboard.space then
-                        30 * (toXY keyboard |> Tuple.first) 
+                        30 * Tuple.first axes
 
                     else
                         0
 
                 -- Horizontal control
-                maxRunVelocity =
-                    if keyboard.left then
-                        -playerRunVelocity
-
-                    else if keyboard.right then
-                        playerRunVelocity
-
-                    else
-                        0
+                runVelocity =
+                    playerRunVelocity * Tuple.first axes
 
                 vx =
-                    approach (entity.v.x + jumpBoostX)  maxRunVelocity (playerRunAcceleration * dt)
+                    approach (entity.v.x + jumpBoostX) runVelocity (playerRunAcceleration * dt)
 
                 -- Vertical control
                 ( jumpTime, vy ) =
@@ -148,7 +144,7 @@ update { keyboard, time } dt entity =
             in
             { entity
                 | v = vec2 vx vy
-                , dir = inputDirection keyboard entity.dir
+                , dir = side keyboard entity.dir
                 , type_ = Player (PlayerData jumpTime)
             }
 
@@ -157,10 +153,10 @@ update { keyboard, time } dt entity =
             entity
 
 
-{-| Figure out entity horizontal direction from keyboard status.
+{-| Figure out entity "side" for render purposes,
 -}
-inputDirection : Keyboard -> Float -> Float
-inputDirection keyboard dir =
+side : Keyboard -> Float -> Float
+side keyboard dir =
     let
         ( newDir, _ ) =
             Playground.toXY keyboard
