@@ -63,6 +63,12 @@ playerRunAcceleration =
     800
 
 
+{-| Gives you slightly less control of horizontal motion in the air.
+-}
+playerAirAccelerationMult =
+    0.8
+
+
 playerJumpVelocity =
     350
 
@@ -136,8 +142,11 @@ update { keyboard, time } dt entity =
                 axes =
                     toXY keyboard
 
+                onGround =
+                    isOnGround entity
+
                 shouldJump =
-                    keyboard.space && isOnGround entity
+                    keyboard.space && onGround
 
                 jumpBoostX =
                     -- If left or right is held at the moment of a jump, horizontal speed boost is applied
@@ -151,8 +160,15 @@ update { keyboard, time } dt entity =
                 runVelocity =
                     playerRunVelocity * Tuple.first axes
 
+                runAcceleration =
+                    if onGround then
+                        playerRunAcceleration
+
+                    else
+                        playerRunAcceleration * playerAirAccelerationMult
+
                 vx =
-                    approach (entity.v.x + jumpBoostX) runVelocity (playerRunAcceleration * dt)
+                    approach (entity.v.x + jumpBoostX) runVelocity (runAcceleration * dt)
 
                 -- Vertical control
                 ( jumpTime, vy ) =
