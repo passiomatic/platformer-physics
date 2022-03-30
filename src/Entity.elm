@@ -78,7 +78,7 @@ playerFallVelocity =
 
 
 playerNextJumpInterval =
-    150
+    350
 
 
 fromSpawns : List Spawn -> Dict Int Entity
@@ -145,17 +145,6 @@ update { keyboard, time } dt entity =
                 onGround =
                     isOnGround entity
 
-                shouldJump =
-                    keyboard.space && onGround
-
-                jumpBoostX =
-                    -- If left or right is held at the moment of a jump, horizontal speed boost is applied
-                    if shouldJump then
-                        30 * Tuple.first axes
-
-                    else
-                        0
-
                 -- Horizontal control
                 runVelocity =
                     playerRunVelocity * Tuple.first axes
@@ -168,12 +157,11 @@ update { keyboard, time } dt entity =
                         playerRunAcceleration * playerAirAccelerationMult
 
                 vx =
-                    approach (entity.v.x + jumpBoostX) runVelocity (runAcceleration * dt)
+                    approach entity.v.x runVelocity (runAcceleration * dt)
 
                 -- Vertical control
                 ( jumpTime, vy ) =
-                    if shouldJump then
-                        --if keyboard.space && entity.v.y < 0 && (time.now - data.lastJumpTime) > playerNextJumpInterval then
+                    if keyboard.space && (onGround || (time.now - data.lastJumpTime) > playerNextJumpInterval) then
                         ( time.now, playerJumpVelocity )
 
                     else
