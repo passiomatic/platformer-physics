@@ -1,5 +1,7 @@
 # Platformer physics in Elm
 
+![Game level](./assets/screenshot.png)
+
 This is a proof-of-concept application to explore several concepts described by Maddy Thorson's post [_Celeste and TowerFall Physics_][c].
 
 All the physics in the system are handled by two types: `Wall` and `Entity`. Walls are the collidable level geometry. Entities are physics objects, such as players, arrows, monsters, treasure chests, etc. 
