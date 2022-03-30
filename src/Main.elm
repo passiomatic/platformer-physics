@@ -23,11 +23,7 @@ type alias Memory =
 
 initialModel : Memory
 initialModel =
-    let
-        entities =
-            Entity.fromSpawns level1.spawns
-    in
-    { entities = entities
+    { entities = Entity.fromSpawns level1.spawns
     , gems = 0
     , camera = findCameraPosition level1.spawns
     , debug = True
@@ -133,11 +129,6 @@ renderGem debug entity =
         |> group
 
 
-
--- renderOrigin =
---     circle lightBlue 2
-
-
 renderBackground screen =
     rectangle black screen.width screen.height
 
@@ -236,39 +227,38 @@ findCameraPosition spawns =
             Vector2.zero
 
 
-{-| Follow a given target if it goes beyond a "safe area" centered on screen.
+{-| Follow a given target if it goes beyond a rectangular area centered on screen.
 -}
 follow : Screen -> Float -> Vec2 -> Vec2 -> Vec2
-follow { width, height } dt target camera =
+follow { top, left, bottom, right } dt target camera =
     let
         newX =
-            -- Check if target is moving torwards left/right edges
-            if target.x < (camera.x - width * 0.5 / viewScale + minDistanceFromEdge) then
+            -- Check if target is moving toward left/right edges
+            if target.x < (camera.x + left / viewScale + minDistanceFromEdge) then
                 target.x
 
-            else if target.x > (camera.x + width * 0.5 / viewScale - minDistanceFromEdge) then
+            else if target.x > (camera.x + right / viewScale - minDistanceFromEdge) then
                 target.x
 
             else
                 camera.x
 
         newY =
-            -- Check if target is moving torwards top/bottom edges
-            if target.y > (camera.y + height * 0.5 / viewScale - minDistanceFromEdge) then
+            -- Check if target is moving toward top/bottom edges
+            if target.y > (camera.y + top / viewScale - minDistanceFromEdge) then
                 target.y
 
-            else if target.y < (camera.y - height * 0.5 / viewScale + minDistanceFromEdge) then
+            else if target.y < (camera.y + bottom / viewScale + minDistanceFromEdge) then
                 target.y
 
             else
                 camera.y
 
-        t =
+        movement =
             Vector2.sub (vec2 newX newY) camera
                 |> Vector2.scale (dt * cameraSpeed)
     in
-    -- Move camera to new position along t vector
-    Vector2.add camera t
+    Vector2.add camera movement
 
 
 

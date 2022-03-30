@@ -180,12 +180,8 @@ intersectsSegment rect { p1, p2 } =
         y1 =
             startingPoint rect.position.y rect.height
     in
-    -- Check if completely outside
-    if (p1.x <= x1 && p2.x <= x1) || (p1.y <= y1 && p2.y <= y1) || (p1.x >= x1 + rect.width && p2.x >= x1 + rect.width) || (p1.y >= y1 + rect.height && p2.y >= y1 + rect.height) then
-        False
-
-    else
-        True
+    -- Check if segment is completely outside rect
+    not ((p1.x <= x1 && p2.x <= x1) || (p1.y <= y1 && p2.y <= y1) || (p1.x >= x1 + rect.width && p2.x >= x1 + rect.width) || (p1.y >= y1 + rect.height && p2.y >= y1 + rect.height))
 
 
 startingPoint centerPoint length =

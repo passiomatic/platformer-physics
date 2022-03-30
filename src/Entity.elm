@@ -60,7 +60,7 @@ playerRunVelocity =
 
 
 playerRunAcceleration =
-    650
+    800
 
 
 playerJumpVelocity =
@@ -178,7 +178,7 @@ isOnGround entity =
     entity.lastContact.y < 0
 
 
-{-| Figure out entity "side" for render purposes,
+{-| Figure out entity "side" for rendering purposes.
 -}
 side : Keyboard -> Float -> Float
 side keyboard dir =
