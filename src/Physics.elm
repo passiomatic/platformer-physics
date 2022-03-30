@@ -1,6 +1,11 @@
-module Physics exposing (Contacts, simulate)
+module Physics exposing
+    ( Contacts
+    , contactsWith
+    , simulate
+    )
 
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
+import Dict exposing (Dict)
 import Entity exposing (Entity, Wall)
 import Set exposing (Set)
 import Vector2.Extra as Vector2
@@ -66,7 +71,7 @@ moveXExact move walls entity =
             newEntity =
                 { entity | position = Vector2.add (vec2 sign 0) entity.position }
         in
-        if isCollidingWithWalls newEntity walls then
+        if touchingWalls newEntity walls then
             -- Hit a wall, stop along the X axis and discard new position
             { entity
                 | v = Vector2.setX 0 entity.v
@@ -93,7 +98,7 @@ moveYExact move walls entity =
             newEntity =
                 { entity | position = Vector2.add (vec2 0 sign) entity.position }
         in
-        if isCollidingWithWalls newEntity walls then
+        if touchingWalls newEntity walls then
             -- Hit a wall, stop along the Y axis and discard new position
             { entity
                 | v = Vector2.setY 0 entity.v
@@ -117,8 +122,8 @@ clearRemainderY entity =
     { entity | remainder = Vector2.setY 0 entity.remainder }
 
 
-isCollidingWithWalls : Entity -> List Wall -> Bool
-isCollidingWithWalls entity walls =
+touchingWalls : Entity -> List Wall -> Bool
+touchingWalls entity walls =
     case walls of
         wall :: rest ->
             if intersectsSegment entity wall then
@@ -127,24 +132,19 @@ isCollidingWithWalls entity walls =
 
             else
                 -- Keep checking
-                isCollidingWithWalls entity rest
+                touchingWalls entity rest
 
         [] ->
             False
 
 
-contactWithEntities : Entity -> List Entity -> Contacts -> Contacts
-contactWithEntities entity others contacts =
-    List.foldl
-        (\other accum ->
-            -- Skip self
-            if entity.id /= other.id then
-                if intersectsBoundingBox entity other then
-                    -- Hit entity, register contact
-                    Set.insert ( entity.id, other.id ) accum
-
-                else
-                    accum
+contactsWith : Entity -> Dict Int Entity -> Contacts -> Contacts
+contactsWith entity others contacts =
+    Dict.foldl
+        (\_ other accum ->
+            if entity.id /= other.id && intersectsBoundingBox entity other then
+                -- Hit entity, register contact
+                Set.insert ( entity.id, other.id ) accum
 
             else
                 accum

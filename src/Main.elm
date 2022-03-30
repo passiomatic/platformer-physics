@@ -7,6 +7,7 @@ import Entity exposing (Entity, EntityType(..), Spawn, Wall)
 import Levels exposing (level1)
 import Physics exposing (Contacts)
 import Playground exposing (..)
+import Set exposing (Set)
 import Vector2.Extra as Vector2
 
 
@@ -55,6 +56,7 @@ view computer memory =
     , renderScene memory.debug level1.walls memory.entities
         |> move (-memory.camera.x * viewScale) -(memory.camera.y * viewScale)
     , renderPhysics memory
+    , renderMessage (String.fromInt memory.gems ++ " GEMS")
     ]
 
 
@@ -117,11 +119,11 @@ renderPlayer debug entity =
 
 renderGem debug entity =
     [ polygon red
-        [ ( -13, 5 )
-        , ( -5, 10 )
-        , ( 5, 10 )
-        , ( 13, 5 )
-        , ( 0, -9 )
+        [ ( -10, 5 )
+        , ( -4, 8 )
+        , ( 4, 8 )
+        , ( 10, 5 )
+        , ( 0, -7 )
         ]
         |> move entity.position.x entity.position.y
     ]
@@ -133,9 +135,9 @@ renderBackground screen =
     rectangle black screen.width screen.height
 
 
-message text =
-    words black text
-        |> move 0 -150
+renderMessage text =
+    words white text
+        |> move 0 250
 
 
 
@@ -160,16 +162,34 @@ update computer memory =
                     entity
                         |> Entity.update computer dt
                         |> Physics.simulate level1.walls dt
-                 --|> contactWithEntities
                 )
                 memory.entities
+
+        -- Figure out contacts between player and other entities since we
+        --   are not interested in generic entities vs. entities interactions
+        newContacts =
+            case Entity.getPlayer newEntities of
+                Just player ->
+                    Physics.contactsWith player newEntities Set.empty
+
+                Nothing ->
+                    Set.empty
     in
-    -- TODO respond to contacts
     { memory
         | entities = newEntities
     }
+        |> resolveContacts newContacts
         |> updateCamera computer dt
         |> logValues computer
+
+
+resolveContacts contacts memory =
+    Set.foldl
+        (\( id1, id2 ) accum ->
+            Entity.respond id1 id2 accum
+        )
+        memory
+        contacts
 
 
 logValues computer memory =

@@ -6,6 +6,7 @@ module Entity exposing
     , Wall
     , fromSpawns
     , getPlayer
+    , respond
     , update
     )
 
@@ -102,8 +103,8 @@ spawn spawn_ nextId =
             , position = spawn_.position
             , side = spawn_.side
             , type_ = spawn_.type_
-            , width = 10
-            , height = 10
+            , width = 16    
+            , height = 14
             }
     in
     case spawn_.type_ of
@@ -117,21 +118,18 @@ spawn spawn_ nextId =
 initPlayer entity =
     { entity
         | id = 0 -- Hardcode id
-        , remainder = Vector2.zero
         , width = 13
         , height = 14
     }
 
 
+initGem entity =
+    -- Just use default values
+    entity
+
+
 getPlayer entities =
     Dict.get 0 entities
-
-
-initGem entity =
-    { entity
-        | width = 10
-        , height = 10
-    }
 
 
 update : Computer -> Float -> Entity -> Entity
@@ -180,6 +178,27 @@ update { keyboard, time } dt entity =
 
 isOnGround entity =
     entity.lastContact.y < 0
+
+
+{-| Contact response logic.
+-}
+respond : Int -> Int -> { a | entities : Dict Int Entity, gems : Int } -> { a | entities : Dict Int Entity, gems : Int }
+respond id1 id2 memory =
+    case ( Dict.get id1 memory.entities, Dict.get id2 memory.entities ) of
+        ( Just entity1, Just entity2 ) ->
+            case ( entity1.type_, entity2.type_ ) of
+                -- Pick up gem
+                ( Player _, Gem ) ->
+                    { memory
+                        | gems = memory.gems + 1
+                        , entities = Dict.remove entity2.id memory.entities
+                    }
+
+                ( _, _ ) ->
+                    memory
+
+        ( _, _ ) ->
+            memory
 
 
 {-| Figure out entity "side" for rendering purposes.
