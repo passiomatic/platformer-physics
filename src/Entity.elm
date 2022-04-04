@@ -1,33 +1,26 @@
 module Entity exposing
-    ( Entity
+    ( Contacts
+    , Entity
     , EntityType(..)
     , PlayerData
     , Spawn
     , Wall
+    , contactsWith
     , fromSpawns
     , getPlayer
     , respond
     , update
     )
 
+{-| Game entities like player, gems, enemies and so on.
+-}
+
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
+import Collision
 import Dict exposing (Dict)
 import Playground exposing (..)
+import Set exposing (Set)
 import Vector2.Extra as Vector2
-
-
-type alias Wall =
-    { p1 : Vec2, p2 : Vec2, normal : Vec2 }
-
-
-type alias PlayerData =
-    { lastJumpTime : Int
-    }
-
-
-type EntityType
-    = Gem
-    | Player PlayerData
 
 
 type alias Entity =
@@ -43,6 +36,20 @@ type alias Entity =
     }
 
 
+type alias PlayerData =
+    { lastJumpTime : Int
+    }
+
+
+type EntityType
+    = Gem
+    | Player PlayerData
+
+
+type alias Wall =
+    { p1 : Vec2, p2 : Vec2, normal : Vec2 }
+
+
 {-| Spawn point for a game entity.
 -}
 type alias Spawn =
@@ -50,6 +57,12 @@ type alias Spawn =
     , side : Float
     , type_ : EntityType
     }
+
+
+{-| Contact records a collision between entities. Used to make gameplay changes.
+-}
+type alias Contacts =
+    Set ( Int, Int )
 
 
 gravity =
@@ -103,7 +116,7 @@ spawn spawn_ nextId =
             , position = spawn_.position
             , side = spawn_.side
             , type_ = spawn_.type_
-            , width = 16    
+            , width = 16
             , height = 14
             }
     in
@@ -132,8 +145,17 @@ getPlayer entities =
     Dict.get 0 entities
 
 
-update : Computer -> Float -> Entity -> Entity
-update { keyboard, time } dt entity =
+{-| Update entity checking user input and do the integration step for the next frame.
+-}
+update : Computer -> List Wall -> Float -> Entity -> Entity
+update computer walls dt entity =
+    entity
+        |> input computer dt
+        |> integrate walls dt
+
+
+input : Computer -> Float -> Entity -> Entity
+input { keyboard, time } dt entity =
     case entity.type_ of
         Player data ->
             let
@@ -201,6 +223,169 @@ respond id1 id2 memory =
             memory
 
 
+
+-- MOVEMENT
+
+
+integrate : List Wall -> Float -> Entity -> Entity
+integrate walls dt entity =
+    let
+        v =
+            Vector2.scale dt entity.v
+    in
+    entity
+        |> moveX v.x walls
+        |> moveY v.y walls
+
+
+moveX : Float -> List Wall -> Entity -> Entity
+moveX amount walls entity =
+    let
+        newRemainderX =
+            entity.remainder.x + amount
+
+        move =
+            round newRemainderX
+    in
+    if move /= 0 then
+        moveXExact move walls { entity | remainder = Vector2.setX (newRemainderX - toFloat move) entity.remainder }
+
+    else
+        -- Save remainder for the next frame
+        { entity | remainder = Vector2.setX newRemainderX entity.remainder }
+
+
+moveY : Float -> List Wall -> Entity -> Entity
+moveY amount walls entity =
+    let
+        newRemainderY =
+            entity.remainder.y + amount
+
+        move =
+            round newRemainderY
+    in
+    if move /= 0 then
+        moveYExact move walls { entity | remainder = Vector2.setY (newRemainderY - toFloat move) entity.remainder }
+
+    else
+        -- Save remainder for the next frame
+        { entity | remainder = Vector2.setY newRemainderY entity.remainder }
+
+
+moveXExact : Int -> List Wall -> Entity -> Entity
+moveXExact move walls entity =
+    -- Keep moving?
+    if move /= 0 then
+        let
+            sign =
+                direction move
+
+            newEntity =
+                { entity | position = Vector2.add (vec2 sign 0) entity.position }
+        in
+        if touchingWalls newEntity walls then
+            -- Hit a wall, stop along the X axis and discard new position
+            { entity
+                | v = Vector2.setX 0 entity.v
+                , lastContact = Vector2.setX (toFloat move) entity.lastContact
+            }
+                |> clearRemainderX
+
+        else
+            moveXExact (move - sign) walls newEntity
+
+    else
+        -- No contacts, clear value along X
+        { entity | lastContact = Vector2.setX 0 entity.lastContact }
+
+
+moveYExact : Int -> List Wall -> Entity -> Entity
+moveYExact move walls entity =
+    -- Keep moving?
+    if move /= 0 then
+        let
+            sign =
+                direction move
+
+            newEntity =
+                { entity | position = Vector2.add (vec2 0 sign) entity.position }
+        in
+        if touchingWalls newEntity walls then
+            -- Hit a wall, stop along the Y axis and discard new position
+            { entity
+                | v = Vector2.setY 0 entity.v
+                , lastContact = Vector2.setY (toFloat move) entity.lastContact
+            }
+                |> clearRemainderY
+
+        else
+            moveYExact (move - sign) walls newEntity
+
+    else
+        -- No contacts, clear value along Y
+        { entity | lastContact = Vector2.setY 0 entity.lastContact }
+
+
+clearRemainderX entity =
+    { entity | remainder = Vector2.setX 0 entity.remainder }
+
+
+clearRemainderY entity =
+    { entity | remainder = Vector2.setY 0 entity.remainder }
+
+
+touchingWalls : Entity -> List Wall -> Bool
+touchingWalls entity walls =
+    case walls of
+        wall :: rest ->
+            if Collision.segment entity wall then
+                -- Along or against the wall normal?
+                Vector2.dot entity.v wall.normal < 0
+
+            else
+                -- Keep checking
+                touchingWalls entity rest
+
+        [] ->
+            False
+
+
+contactsWith : Entity -> Dict Int Entity -> Contacts -> Contacts
+contactsWith entity others contacts =
+    Dict.foldl
+        (\_ other accum ->
+            if entity.id /= other.id && Collision.boundingBox entity other then
+                -- Hit entity, register contact
+                Set.insert ( entity.id, other.id ) accum
+
+            else
+                accum
+        )
+        contacts
+        others
+
+
+{-| Approach a target value increasing or decreasing by delta steps.
+-}
+approach value target delta =
+    if value > target then
+        max (value - delta) target
+
+    else
+        min (value + delta) target
+
+
+direction value =
+    if value == 0 then
+        0
+
+    else if value > 0 then
+        1
+
+    else
+        -1
+
+
 {-| Figure out entity "side" for rendering purposes.
 -}
 side : Keyboard -> Float -> Float
@@ -215,13 +400,3 @@ side keyboard dir =
     else
         -- Keep last direction
         dir
-
-
-{-| Approach a target value increasing or decreasing by delta steps.
--}
-approach value target delta =
-    if value > target then
-        max (value - delta) target
-
-    else
-        min (value + delta) target

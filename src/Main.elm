@@ -3,9 +3,8 @@ module Main exposing (..)
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Diagnostic
 import Dict exposing (Dict)
-import Entity exposing (Entity, EntityType(..), Spawn, Wall)
+import Entity exposing (Entity, EntityType(..), Spawn, Wall, Contacts)
 import Levels exposing (level1)
-import Physics exposing (Contacts)
 import Playground exposing (..)
 import Set exposing (Set)
 import Vector2.Extra as Vector2
@@ -160,8 +159,7 @@ update computer memory =
             Dict.map
                 (\_ entity ->
                     entity
-                        |> Entity.update computer dt
-                        |> Physics.simulate level1.walls dt
+                        |> Entity.update computer level1.walls dt
                 )
                 memory.entities
 
@@ -170,7 +168,7 @@ update computer memory =
         newContacts =
             case Entity.getPlayer newEntities of
                 Just player ->
-                    Physics.contactsWith player newEntities Set.empty
+                    Entity.contactsWith player newEntities Set.empty
 
                 Nothing ->
                     Set.empty
