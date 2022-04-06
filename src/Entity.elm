@@ -1,9 +1,9 @@
 module Entity exposing
     ( Contacts
     , Entity
+    , EntitySpawn
     , EntityType(..)
     , PlayerData
-    , Spawn
     , Wall
     , contactsWith
     , fromSpawns
@@ -50,9 +50,7 @@ type alias Wall =
     { p1 : Vec2, p2 : Vec2, normal : Vec2 }
 
 
-{-| Spawn point for a game entity.
--}
-type alias Spawn =
+type alias EntitySpawn =
     { position : Vec2
     , side : Float
     , type_ : EntityType
@@ -95,7 +93,7 @@ playerNextJumpInterval =
     350
 
 
-fromSpawns : List Spawn -> Dict Int Entity
+fromSpawns : List EntitySpawn -> Dict Int Entity
 fromSpawns spawns =
     List.indexedMap
         (\index spawn_ ->
@@ -105,7 +103,7 @@ fromSpawns spawns =
         |> Dict.fromList
 
 
-spawn : Spawn -> Int -> ( Int, Entity )
+spawn : EntitySpawn -> Int -> ( Int, Entity )
 spawn spawn_ nextId =
     let
         entity =

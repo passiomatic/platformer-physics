@@ -3,8 +3,9 @@ module Main exposing (..)
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Diagnostic
 import Dict exposing (Dict)
-import Entity exposing (Entity, EntityType(..), Spawn, Wall, Contacts)
+import Entity exposing (Contacts, Entity, EntitySpawn, EntityType(..), Wall)
 import Levels exposing (level1)
+import Plat exposing (Platform, update)
 import Playground exposing (..)
 import Set exposing (Set)
 import Vector2.Extra as Vector2
@@ -12,6 +13,7 @@ import Vector2.Extra as Vector2
 
 type alias Memory =
     { entities : Dict Int Entity
+    , platforms : List Platform
     , gems : Int
     , camera : Vec2
     , debug : Bool
@@ -24,6 +26,7 @@ type alias Memory =
 initialModel : Memory
 initialModel =
     { entities = Entity.fromSpawns level1.spawns
+    , platforms = Plat.fromSpawns level1.platforms
     , gems = 0
     , camera = findCameraPosition level1.spawns
     , debug = True
@@ -52,7 +55,7 @@ cameraSpeed =
 view : Computer -> Memory -> List Shape
 view computer memory =
     [ renderBackground computer.screen
-    , renderScene memory.debug level1.walls memory.entities
+    , renderScene memory.debug level1.walls memory.platforms memory.entities
         |> move (-memory.camera.x * viewScale) -(memory.camera.y * viewScale)
     , renderPhysics memory
     , renderMessage (String.fromInt memory.gems ++ " GEMS")
@@ -76,11 +79,18 @@ renderPhysics memory =
         |> group
 
 
-renderScene : Bool -> List Wall -> Dict Int Entity -> Shape
-renderScene debug walls entities =
+renderScene : Bool -> List Wall -> List Platform -> Dict Int Entity -> Shape
+renderScene debug walls platforms entities =
     let
         walls_ =
             List.map Diagnostic.wall walls
+
+        platforms_ =
+            List.map
+                (\platform ->
+                    Diagnostic.hitbox platform
+                )
+                platforms
 
         entities_ =
             Dict.map
@@ -95,7 +105,7 @@ renderScene debug walls entities =
                 entities
                 |> Dict.values
     in
-    List.append walls_ entities_
+    List.concat [ walls_, platforms_, entities_ ]
         |> group
         |> scale viewScale
 
@@ -154,7 +164,14 @@ update computer memory =
         dt =
             min fixedDeltaTime (toFloat computer.time.delta / 1000)
 
-        --Debug.log "dt" <| min fixedDeltaTime (toFloat computer.time.delta / 1000)
+        newPlatforms =
+            List.map
+                (\platform ->
+                    platform
+                        |> Plat.update dt 
+                )
+                memory.platforms
+
         newEntities =
             Dict.map
                 (\_ entity ->
@@ -175,6 +192,7 @@ update computer memory =
     in
     { memory
         | entities = newEntities
+        , platforms = newPlatforms
     }
         |> resolveContacts newContacts
         |> updateCamera computer dt
@@ -221,7 +239,7 @@ updateCamera computer dt memory =
 
 {-| Attempt to init camera with player spawn position.
 -}
-findCameraPosition : List Spawn -> Vec2
+findCameraPosition : List EntitySpawn -> Vec2
 findCameraPosition spawns =
     let
         maybeSpawn =
