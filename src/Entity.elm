@@ -18,6 +18,7 @@ module Entity exposing
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Collision
 import Dict exposing (Dict)
+import Plat exposing (Platform)
 import Playground exposing (..)
 import Set exposing (Set)
 import Vector2.Extra as Vector2
@@ -143,13 +144,13 @@ getPlayer entities =
     Dict.get 0 entities
 
 
-{-| Update entity checking user input and do the integration step for the next frame.
+{-| Check for user input and do the integration step for the next frame.
 -}
-update : Computer -> List Wall -> Float -> Entity -> Entity
-update computer walls dt entity =
+update : Computer -> List Wall -> List Platform -> Float -> Entity -> Entity
+update computer walls platforms dt entity =
     entity
         |> input computer dt
-        |> integrate walls dt
+        |> integrate walls platforms dt
 
 
 input : Computer -> Float -> Entity -> Entity
@@ -225,8 +226,8 @@ respond id1 id2 memory =
 -- MOVEMENT
 
 
-integrate : List Wall -> Float -> Entity -> Entity
-integrate walls dt entity =
+integrate : List Wall -> List Platform -> Float -> Entity -> Entity
+integrate walls platforms dt entity =
     let
         v =
             Vector2.scale dt entity.v
@@ -242,11 +243,11 @@ moveX amount walls entity =
         newRemainderX =
             entity.remainder.x + amount
 
-        move =
+        exactAmount =
             round newRemainderX
     in
-    if move /= 0 then
-        moveXExact move walls { entity | remainder = Vector2.setX (newRemainderX - toFloat move) entity.remainder }
+    if exactAmount /= 0 then
+        moveXExact exactAmount walls { entity | remainder = Vector2.setX (newRemainderX - toFloat exactAmount) entity.remainder }
 
     else
         -- Save remainder for the next frame
@@ -259,11 +260,11 @@ moveY amount walls entity =
         newRemainderY =
             entity.remainder.y + amount
 
-        move =
+        exactAmount =
             round newRemainderY
     in
-    if move /= 0 then
-        moveYExact move walls { entity | remainder = Vector2.setY (newRemainderY - toFloat move) entity.remainder }
+    if exactAmount /= 0 then
+        moveYExact exactAmount walls { entity | remainder = Vector2.setY (newRemainderY - toFloat exactAmount) entity.remainder }
 
     else
         -- Save remainder for the next frame
@@ -271,12 +272,12 @@ moveY amount walls entity =
 
 
 moveXExact : Int -> List Wall -> Entity -> Entity
-moveXExact move walls entity =
+moveXExact exactAmount walls entity =
     -- Keep moving?
-    if move /= 0 then
+    if exactAmount /= 0 then
         let
             sign =
-                direction move
+                direction exactAmount
 
             newEntity =
                 { entity | position = Vector2.add (vec2 sign 0) entity.position }
@@ -285,12 +286,12 @@ moveXExact move walls entity =
             -- Hit a wall, stop along the X axis and discard new position
             { entity
                 | v = Vector2.setX 0 entity.v
-                , lastContact = Vector2.setX (toFloat move) entity.lastContact
+                , lastContact = Vector2.setX (toFloat exactAmount) entity.lastContact
             }
                 |> clearRemainderX
 
         else
-            moveXExact (move - sign) walls newEntity
+            moveXExact (exactAmount - sign) walls newEntity
 
     else
         -- No contacts, clear value along X
@@ -298,12 +299,12 @@ moveXExact move walls entity =
 
 
 moveYExact : Int -> List Wall -> Entity -> Entity
-moveYExact move walls entity =
+moveYExact exactAmount walls entity =
     -- Keep moving?
-    if move /= 0 then
+    if exactAmount /= 0 then
         let
             sign =
-                direction move
+                direction exactAmount
 
             newEntity =
                 { entity | position = Vector2.add (vec2 0 sign) entity.position }
@@ -312,12 +313,12 @@ moveYExact move walls entity =
             -- Hit a wall, stop along the Y axis and discard new position
             { entity
                 | v = Vector2.setY 0 entity.v
-                , lastContact = Vector2.setY (toFloat move) entity.lastContact
+                , lastContact = Vector2.setY (toFloat exactAmount) entity.lastContact
             }
                 |> clearRemainderY
 
         else
-            moveYExact (move - sign) walls newEntity
+            moveYExact (exactAmount - sign) walls newEntity
 
     else
         -- No contacts, clear value along Y

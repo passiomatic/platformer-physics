@@ -8,7 +8,6 @@ module Plat exposing
 -}
 
 import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
-import Entity exposing (Entity)
 import Vector2.Extra as Vector2
 
 
@@ -52,7 +51,7 @@ update : Float -> Platform -> Platform
 update dt platform =
     let
         v =
-            if Vector2.distance platform.startPosition platform.position > platform.maxOffset then
+            if Vector2.distance platform.startPosition platform.position > abs platform.maxOffset then 
                 -- Go back
                 Vector2.negate platform.v
 
@@ -94,10 +93,10 @@ moveXExact exactAmount platform =
     -- Keep moving?
     if exactAmount /= 0 then
         let
-            newEntity =
+            newPlatform =
                 { platform | position = Vector2.setX (platform.position.x + toFloat exactAmount) platform.position }
         in
-        newEntity
+        newPlatform
 
     else
         platform
@@ -108,10 +107,10 @@ moveYExact exactAmount platform =
     -- Keep moving?
     if exactAmount /= 0 then
         let
-            newEntity =
+            newPlatform =
                 { platform | position = Vector2.setY (platform.position.y + toFloat exactAmount) platform.position }
         in
-        newEntity
+        newPlatform
 
     else
         platform

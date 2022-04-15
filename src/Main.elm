@@ -176,7 +176,7 @@ update computer memory =
             Dict.map
                 (\_ entity ->
                     entity
-                        |> Entity.update computer level1.walls dt
+                        |> Entity.update computer level1.walls newPlatforms dt
                 )
                 memory.entities
 
