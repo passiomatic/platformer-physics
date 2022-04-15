@@ -180,7 +180,7 @@ update computer memory =
                 )
                 memory.entities
 
-        -- Figure out contacts between player and other entities since we
+        -- Figure out just contacts between player and other entities since we
         --   are not interested in generic entities vs. entities interactions
         newContacts =
             case Entity.getPlayer newEntities of

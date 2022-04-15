@@ -19,7 +19,7 @@ import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
 import Collision
 import Dict exposing (Dict)
 import Plat exposing (Platform)
-import Playground exposing (..)
+import Playground exposing (Computer, Keyboard)
 import Set exposing (Set)
 import Vector2.Extra as Vector2
 
@@ -159,7 +159,7 @@ input { keyboard, time } dt entity =
         Player data ->
             let
                 axes =
-                    toXY keyboard
+                    Playground.toXY keyboard
 
                 onGround =
                     isOnGround entity
