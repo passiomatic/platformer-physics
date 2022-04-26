@@ -186,9 +186,9 @@ def serialize_objects_layer(level, objects):
     return serialize_list(all_points)
 
 
-def serialize_level(level):
+def serialize_level(name, level):
 
-    output = "%s = {\n" % level["name"]
+    output = "%s = {\n" % name
 
     object_layers = filter(is_visible, filter(is_object_layer, level['layers']))
     objects = [(layer['name'].lower(), serialize_objects_layer(level, layer['objects'])) for layer in object_layers]
@@ -210,34 +210,31 @@ def is_visible(layer):
     return layer['visible'] == True
 
 
-def serialize(level):
+def serialize(name, level):
     return (BOILERPLATE) +\
-        ("%s" % serialize_level(level))
+        ("%s" % serialize_level(name, level))
 
 
 def convert_point_position(level_w, level_h, x, y):
     # Just flip Y axis
     return x, level_h - y
 
-# Convert from rect top left coordinates (used in right-down render order) 
-#   to level "midpoint" coordinates
-
 def convert_rect_position(order, _, level_h, w, h, x, y):
+    """Convert from rect top left coordinates (used in right-down render order) to level "midpoint" coordinates"""
     if order == RIGHT_DOWN:
         # Return midpoint x and midpoint Y with flipped axis
         return x + w / 2, level_h - y - h / 2
     else:
         raise ValueError("Unsupported rendering order " + order)
 
-# Convert from polygon coordinates to level absolute coordinates
-
 def convert_polygon_position(origin_x, origin_y, x, y):
+    """Convert from relative polygon coordinates to level absolute coordinates"""
     # X and Y are relative to origin
     return origin_x + x, origin_y - y
 
 
 def get_property(obj, name, default):
-    # Look up for property name
+    """Look up for property name"""
     for index, prop in enumerate(obj["properties"]):
         if prop["name"] == name:
             try:
@@ -266,17 +263,14 @@ def main():
     input_path, output_dir = args[0], args[1]
     _, filename = os.path.split(input_path)
 
-    with open(input_path) as f:
+    with open(input_path) as infile:
         name, _ = os.path.splitext(filename)
 
-        data = json.load(f)
-        # Inject level name
-        data['name'] = name
-        level = serialize(data)
+        data = json.load(infile)
+        level = serialize(name, data)
 
-        # Write output level file
-        with open(os.path.join(output_dir, "Levels.elm"), "w") as out_f:
-            out_f.write(level)
+        with open(os.path.join(output_dir, "Levels.elm"), "w") as outfile:
+            outfile.write(level)
             print("Written " + name + " into " + output_dir)
 
 
