@@ -233,12 +233,12 @@ integrate walls platforms dt entity =
             Vector2.scale dt entity.v
     in
     entity
-        |> moveX v.x walls
-        |> moveY v.y walls
+        |> moveX v.x walls platforms
+        |> moveY v.y walls platforms
 
 
-moveX : Float -> List Wall -> Entity -> Entity
-moveX amount walls entity =
+moveX : Float -> List Wall -> List Platform -> Entity -> Entity
+moveX amount walls platforms entity =
     let
         newRemainderX =
             entity.remainder.x + amount
@@ -254,8 +254,8 @@ moveX amount walls entity =
         { entity | remainder = Vector2.setX newRemainderX entity.remainder }
 
 
-moveY : Float -> List Wall -> Entity -> Entity
-moveY amount walls entity =
+moveY : Float -> List Wall -> List Platform -> Entity -> Entity
+moveY amount walls platforms entity =
     let
         newRemainderY =
             entity.remainder.y + amount
