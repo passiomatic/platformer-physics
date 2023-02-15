@@ -247,7 +247,7 @@ moveX amount walls platforms entity =
             round newRemainderX
     in
     if exactAmount /= 0 then
-        moveXExact exactAmount walls { entity | remainder = Vector2.setX (newRemainderX - toFloat exactAmount) entity.remainder }
+        moveXExact exactAmount walls platforms { entity | remainder = Vector2.setX (newRemainderX - toFloat exactAmount) entity.remainder }
 
     else
         -- Save remainder for the next frame
@@ -264,15 +264,15 @@ moveY amount walls platforms entity =
             round newRemainderY
     in
     if exactAmount /= 0 then
-        moveYExact exactAmount walls { entity | remainder = Vector2.setY (newRemainderY - toFloat exactAmount) entity.remainder }
+        moveYExact exactAmount walls platforms { entity | remainder = Vector2.setY (newRemainderY - toFloat exactAmount) entity.remainder }
 
     else
         -- Save remainder for the next frame
         { entity | remainder = Vector2.setY newRemainderY entity.remainder }
 
 
-moveXExact : Int -> List Wall -> Entity -> Entity
-moveXExact exactAmount walls entity =
+moveXExact : Int -> List Wall -> List Platform -> Entity -> Entity
+moveXExact exactAmount walls platforms entity =
     -- Keep moving?
     if exactAmount /= 0 then
         let
@@ -282,6 +282,8 @@ moveXExact exactAmount walls entity =
             newEntity =
                 { entity | position = Vector2.add (vec2 sign 0) entity.position }
         in
+        -- TODO Check against platforms
+
         if touchingWalls newEntity walls then
             -- Hit a wall, stop along the X axis and discard new position
             { entity
@@ -291,15 +293,15 @@ moveXExact exactAmount walls entity =
                 |> clearRemainderX
 
         else
-            moveXExact (exactAmount - sign) walls newEntity
+            moveXExact (exactAmount - sign) walls platforms newEntity
 
     else
         -- No contacts, clear value along X
         { entity | lastContact = Vector2.setX 0 entity.lastContact }
 
 
-moveYExact : Int -> List Wall -> Entity -> Entity
-moveYExact exactAmount walls entity =
+moveYExact : Int -> List Wall -> List Platform -> Entity -> Entity
+moveYExact exactAmount walls platforms entity =
     -- Keep moving?
     if exactAmount /= 0 then
         let
@@ -309,6 +311,8 @@ moveYExact exactAmount walls entity =
             newEntity =
                 { entity | position = Vector2.add (vec2 0 sign) entity.position }
         in
+        -- TODO Check against platforms
+
         if touchingWalls newEntity walls then
             -- Hit a wall, stop along the Y axis and discard new position
             { entity
@@ -318,7 +322,7 @@ moveYExact exactAmount walls entity =
                 |> clearRemainderY
 
         else
-            moveYExact (exactAmount - sign) walls newEntity
+            moveYExact (exactAmount - sign) walls platforms newEntity
 
     else
         -- No contacts, clear value along Y
