@@ -17,3 +17,6 @@ dist: build-optimize-2
 
 run:
 	elm reactor
+
+dev:
+	open index.html && npm run dev

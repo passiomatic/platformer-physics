@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "dev": "elm-watch hot"
+  },
+  "devDependencies": {
+    "elm-watch": "^1.1.3"
+  }
+}
