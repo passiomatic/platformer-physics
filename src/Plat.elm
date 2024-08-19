@@ -50,8 +50,15 @@ fromSpawns spawns =
 update : Float -> Platform -> Platform
 update dt platform =
     let
+        d =
+            Vector2.distance platform.startPosition platform.position
+
         v =
-            if Vector2.distance platform.startPosition platform.position > abs platform.maxOffset then 
+            if d < 0 then
+                -- Do not go below start position
+                Vector2.negate platform.v
+
+            else if d > platform.maxOffset then
                 -- Go back
                 Vector2.negate platform.v
 

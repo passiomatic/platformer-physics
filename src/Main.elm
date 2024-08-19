@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import AltMath.Vector2 as Vector2 exposing (Vec2, vec2)
+import AltMath.Vector2 as Vector2 exposing (Vec2, distance, vec2)
 import Diagnostic
 import Dict exposing (Dict)
 import Entity exposing (Contacts, Entity, EntitySpawn, EntityType(..), Wall)
@@ -20,6 +20,7 @@ type alias Memory =
     , lastLogTime : Int
     , lastVelocity : Vec2
     , lastContact : Vec2
+    , distance : Float
     }
 
 
@@ -33,6 +34,7 @@ initialModel =
     , lastLogTime = 0
     , lastVelocity = Vector2.zero
     , lastContact = Vector2.zero
+    , distance = 0
     }
 
 
@@ -71,6 +73,9 @@ renderPhysics memory =
         , Diagnostic.vector yellow "lastContact" memory.lastContact
             |> moveDown 100
             |> moveRight 150
+        , Diagnostic.vector yellow "d" (Vec2 0 memory.distance)
+            |> moveDown 100
+            |> moveRight 350
         ]
 
      else
@@ -160,7 +165,6 @@ fixedDeltaTime =
 update : Computer -> Memory -> Memory
 update computer memory =
     let
-        -- TODO fix dt
         dt =
             min fixedDeltaTime (toFloat computer.time.delta / 1000)
 
@@ -168,7 +172,7 @@ update computer memory =
             List.map
                 (\platform ->
                     platform
-                        |> Plat.update dt 
+                        |> Plat.update dt
                 )
                 memory.platforms
 
@@ -196,7 +200,8 @@ update computer memory =
     }
         |> resolveContacts newContacts
         |> updateCamera computer dt
-        |> logValues computer
+        --|> logPlayerValues computer
+        |> logPlatformValues computer
 
 
 resolveContacts contacts memory =
@@ -208,8 +213,8 @@ resolveContacts contacts memory =
         contacts
 
 
-logValues computer memory =
-    if memory.debug && computer.time.now - memory.lastLogTime > logTimeInterval then
+logPlayerValues computer memory =
+    if memory.debug && (computer.time.now - memory.lastLogTime > logTimeInterval) then
         case Entity.getPlayer memory.entities of
             Just player ->
                 { memory
@@ -220,6 +225,22 @@ logValues computer memory =
 
             Nothing ->
                 memory
+
+    else
+        memory
+
+
+logPlatformValues computer memory =
+    if memory.debug && (computer.time.now - memory.lastLogTime > logTimeInterval) then
+        List.foldl
+            (\platform memory_ ->
+                { memory_
+                    | distance = Vector2.distance platform.startPosition platform.position
+                    , lastLogTime = computer.time.now
+                }
+            )
+            memory
+            memory.platforms
 
     else
         memory
