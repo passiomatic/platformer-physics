@@ -15,18 +15,20 @@ type alias Platform =
     { remainder : Vec2
     , position : Vec2
     , startPosition : Vec2
+    --, stopPosition : Vec2
+    , offset: Vec2
     , v : Vec2
     , width : Float
     , height : Float
-    , maxOffset : Float
     }
 
 
 type alias PlatformSpawn =
-    { position : Vec2
+    { startPosition : Vec2
+    --, stopPosition : Vec2
+    , offset: Vec2    
     , width : Float
     , height : Float
-    , maxOffset : Float
     , period : Float
     }
 
@@ -36,12 +38,13 @@ fromSpawns spawns =
     List.map
         (\spawn_ ->
             { remainder = Vector2.zero
-            , position = spawn_.position
-            , startPosition = spawn_.position
-            , v = Vector2.scale (1 / spawn_.period) (vec2 0 spawn_.maxOffset)
+            , position = spawn_.startPosition
+            , startPosition = spawn_.startPosition
+            --, stopPosition = spawn_.stopPosition         
+            , offset = spawn_.offset   
+            , v = Vector2.scale (1 / spawn_.period) spawn_.offset
             , width = spawn_.width
             , height = spawn_.height
-            , maxOffset = spawn_.maxOffset
             }
         )
         spawns
@@ -51,16 +54,16 @@ update : Float -> Platform -> Platform
 update dt platform =
     let
         d =
-            Vector2.distance platform.startPosition platform.position
+            Vector2.sub platform.startPosition platform.position
 
         v =
-            if d < 0 then
+            if (Vector2.length (Vector2.sub d  platform.offset)) > 0 then
                 -- Do not go below start position
                 Vector2.negate platform.v
 
-            else if d > platform.maxOffset then
-                -- Go back
-                Vector2.negate platform.v
+            -- else if d > platform.maxOffset then
+            --     -- Go back
+            --     Vector2.negate platform.v
 
             else
                 platform.v

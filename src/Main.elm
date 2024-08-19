@@ -235,7 +235,8 @@ logPlatformValues computer memory =
         List.foldl
             (\platform memory_ ->
                 { memory_
-                    | distance = Vector2.distance platform.startPosition platform.position
+                    --| distance = Vector2.distance platform.startPosition platform.position
+                    | distance = Vector2.length (Vector2.sub platform.position platform.startPosition)
                     , lastLogTime = computer.time.now
                 }
             )
