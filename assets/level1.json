@@ -1,12 +1,5 @@
 { "backgroundcolor":"#66ccff",
  "compressionlevel":-1,
- "editorsettings":
-    {
-     "export":
-        {
-         "target":"."
-        }
-    },
  "height":30,
  "infinite":false,
  "layers":[
@@ -263,9 +256,9 @@
                  "name":"Plat1",
                  "properties":[
                         {
-                         "name":"maxOffset",
-                         "type":"int",
-                         "value":100
+                         "name":"offset",
+                         "type":"string",
+                         "value":"0;100"
                         }, 
                         {
                          "name":"period",
@@ -311,11 +304,11 @@
  "nextobjectid":210,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.4.3",
+ "tiledversion":"1.10.2",
  "tileheight":16,
  "tilesets":[],
  "tilewidth":16,
  "type":"map",
- "version":1.4,
+ "version":"1.10",
  "width":40
 }

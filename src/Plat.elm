@@ -15,7 +15,6 @@ type alias Platform =
     { remainder : Vec2
     , position : Vec2
     , startPosition : Vec2
-    --, stopPosition : Vec2
     , offset: Vec2
     , v : Vec2
     , width : Float
@@ -40,7 +39,6 @@ fromSpawns spawns =
             { remainder = Vector2.zero
             , position = spawn_.startPosition
             , startPosition = spawn_.startPosition
-            --, stopPosition = spawn_.stopPosition         
             , offset = spawn_.offset   
             , v = Vector2.scale (1 / spawn_.period) spawn_.offset
             , width = spawn_.width
@@ -54,16 +52,16 @@ update : Float -> Platform -> Platform
 update dt platform =
     let
         d =
-            Vector2.sub platform.startPosition platform.position
+            Vector2.length (Vector2.sub platform.startPosition platform.position)
 
         v =
-            if (Vector2.length (Vector2.sub d  platform.offset)) > 0 then
-                -- Do not go below start position
+            -- Top? 
+            if d > Vector2.length platform.offset then
                 Vector2.negate platform.v
 
-            -- else if d > platform.maxOffset then
-            --     -- Go back
-            --     Vector2.negate platform.v
+            -- Start?
+            else if d == 0 then
+                Vector2.negate platform.v
 
             else
                 platform.v

@@ -20,7 +20,7 @@ type alias Memory =
     , lastLogTime : Int
     , lastVelocity : Vec2
     , lastContact : Vec2
-    , distance : Float
+    -- , distance : Float
     }
 
 
@@ -34,7 +34,7 @@ initialModel =
     , lastLogTime = 0
     , lastVelocity = Vector2.zero
     , lastContact = Vector2.zero
-    , distance = 0
+    -- , distance = 0
     }
 
 
@@ -73,9 +73,9 @@ renderPhysics memory =
         , Diagnostic.vector yellow "lastContact" memory.lastContact
             |> moveDown 100
             |> moveRight 150
-        , Diagnostic.vector yellow "d" (Vec2 0 memory.distance)
-            |> moveDown 100
-            |> moveRight 350
+        -- , Diagnostic.vector yellow "d" (Vec2 0 memory.distance)
+        --     |> moveDown 100
+        --     |> moveRight 350
         ]
 
      else
@@ -200,8 +200,8 @@ update computer memory =
     }
         |> resolveContacts newContacts
         |> updateCamera computer dt
-        --|> logPlayerValues computer
-        |> logPlatformValues computer
+        |> logPlayerValues computer
+        --|> logPlatformValues computer
 
 
 resolveContacts contacts memory =
@@ -230,21 +230,23 @@ logPlayerValues computer memory =
         memory
 
 
-logPlatformValues computer memory =
-    if memory.debug && (computer.time.now - memory.lastLogTime > logTimeInterval) then
-        List.foldl
-            (\platform memory_ ->
-                { memory_
-                    --| distance = Vector2.distance platform.startPosition platform.position
-                    | distance = Vector2.length (Vector2.sub platform.position platform.startPosition)
-                    , lastLogTime = computer.time.now
-                }
-            )
-            memory
-            memory.platforms
+-- logPlatformValues computer memory =
+--     if memory.debug && (computer.time.now - memory.lastLogTime > logTimeInterval) then
+--         List.foldl
+--             (\platform memory_ ->
+--                 let
+--                     distance = Vector2.length <| Vector2.sub platform.startPosition platform.position
+--                 in
+--                 { memory_
+--                     | distance = distance
+--                     , lastLogTime = computer.time.now
+--                 }
+--             )
+--             memory
+--             memory.platforms
 
-    else
-        memory
+--     else
+--         memory
 
 
 updateCamera : Computer -> Float -> Memory -> Memory
