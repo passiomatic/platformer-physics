@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 import itertools
 from functools import partial
 from optparse import OptionParser, make_option
-#from PIL import Image
+# from PIL import Image
 import math
 import re
 
@@ -126,6 +126,7 @@ def serialize_value(v):
 # Tiled stuff
 # -------------
 
+
 def serialize_objects_layer(level, objects):
 
     # Convert size in pixels
@@ -137,7 +138,8 @@ def serialize_objects_layer(level, objects):
 
         # Check object type
         if "polyline" in object:
-            origin_x, origin_y = convert_point_position(level_w, level_h, object['x'], object['y'])
+            origin_x, origin_y = convert_point_position(
+                level_w, level_h, object['x'], object['y'])
             converter = partial(convert_polygon_position, origin_x, origin_y)
 
             # Convert a polyline into a list of segments, e.g.:
@@ -157,7 +159,8 @@ def serialize_objects_layer(level, objects):
                 nx = rx / length
                 ny = ry / length
                 normal = Vec2((nx, ny))
-                points.append(serialize_record({'p1': p1, 'p2': p2, 'normal': normal}))
+                points.append(serialize_record(
+                    {'p1': p1, 'p2': p2, 'normal': normal}))
                 start_point = point
 
             return points
@@ -166,7 +169,8 @@ def serialize_objects_layer(level, objects):
 
         elif "point" in object:
             name = object['name']
-            p = convert_point_position(level_w, level_h, object['x'], object['y'])
+            p = convert_point_position(
+                level_w, level_h, object['x'], object['y'])
             if name == "Player":
                 type_ = Identity("Player (PlayerData 0)")
             else:
@@ -177,7 +181,8 @@ def serialize_objects_layer(level, objects):
         # In the end assume a rectangle object, which is intended as a platform
 
         else:
-            originX, originY = convert_rect_position(order, level_w, level_h, object['width'], object['height'], object['x'], object['y'])
+            originX, originY = convert_rect_position(
+                order, level_w, level_h, object['width'], object['height'], object['x'], object['y'])
             w = object['width']
             h = object['height']
             return [serialize_record({'startPosition': Vec2((originX, originY)), "width": int(w),  'height': int(h), 'offset': get_property(object, "offset", Vec2((0, 100))), 'period': get_property(object, "period", 5)})]
@@ -193,12 +198,15 @@ def serialize_level(name, level):
 
     output = "%s = {\n" % name
 
-    object_layers = filter(is_visible, filter(is_object_layer, level['layers']))
-    objects = [(layer['name'].lower(), serialize_objects_layer(level, layer['objects'])) for layer in object_layers]
+    object_layers = filter(is_visible, filter(
+        is_object_layer, level['layers']))
+    objects = [(layer['name'].lower(), serialize_objects_layer(
+        level, layer['objects'])) for layer in object_layers]
 
     # List all object layers found
     for index, (layer_name, layer_objects) in enumerate(objects):
-        output += "    %s%s = %s\n" % ("" if index == 0 else ", ", layer_name, layer_objects)
+        output += "    %s%s = %s\n" % ("" if index ==
+                                       0 else ", ", layer_name, layer_objects)
 
     output += "    }\n"
 
@@ -222,6 +230,7 @@ def convert_point_position(level_w, level_h, x, y):
     # Just flip Y axis
     return x, level_h - y
 
+
 def convert_rect_position(order, _, level_h, w, h, x, y):
     """Convert from rect top left coordinates (used in right-down render order) to level "midpoint" coordinates"""
     if order == RIGHT_DOWN:
@@ -230,10 +239,12 @@ def convert_rect_position(order, _, level_h, w, h, x, y):
     else:
         raise ValueError("Unsupported rendering order " + order)
 
+
 def convert_polygon_position(origin_x, origin_y, x, y):
     """Convert from relative polygon coordinates to level absolute coordinates"""
     # X and Y are relative to origin
     return origin_x + x, origin_y - y
+
 
 def get_property(obj, name, default):
     """Look up for property name"""
@@ -241,7 +252,7 @@ def get_property(obj, name, default):
         if prop["name"] == name:
             try:
                 type_ = obj["properties"][index]["type"]
-                if type_ in ["int", "float"]:                
+                if type_ in ["int", "float"]:
                     # Return as-is
                     return obj["properties"][index]["value"]
                 else:
@@ -249,7 +260,7 @@ def get_property(obj, name, default):
                     s = obj["properties"][index]["value"]
                     match = RE_VECTOR.match(s)
                     if match:
-                        v = (int(match.group(1)), int(match.group(2)))  
+                        v = (int(match.group(1)), int(match.group(2)))
                         return Vec2(v)
                     else:
                         return s
@@ -265,6 +276,7 @@ USAGE = """%prog level.json output-dir
 
 Convert a Tiled JSON level into a Levels.elm module. Only object layers are included.
 """
+
 
 def main():
     parser = OptionParser(usage=USAGE)
