@@ -9,8 +9,9 @@ from urllib.parse import urlparse
 import itertools
 from functools import partial
 from optparse import OptionParser, make_option
-from PIL import Image
+#from PIL import Image
 import math
+import re
 
 BOILERPLATE = """
 module Levels exposing (..)
@@ -23,6 +24,8 @@ import Entity exposing (EntityType(..), PlayerData)
 
 # Tiled render order
 RIGHT_DOWN, RIGHT_UP, LEFT_DOWN, LEFT_UP = "right-down", "right-up", "left-down", "left-up"
+
+RE_VECTOR = re.compile(r'(-?\d+);(-?\d+)')
 
 # Serializers for basic Elm types
 
@@ -138,7 +141,7 @@ def serialize_objects_layer(level, objects):
             converter = partial(convert_polygon_position, origin_x, origin_y)
 
             # Convert a polyline into a list of segments, e.g.:
-            #   A three point A-B-C polyline becomes two A-B and B-C segments.
+            #   A three point A-B-C polyline becomes two A-B and B-C segments
 
             points = []
             start_point = object['polyline'][0]
@@ -159,7 +162,7 @@ def serialize_objects_layer(level, objects):
 
             return points
 
-        # A point is intended as spawn position for an entity.
+        # A point is intended as spawn position for an entity
 
         elif "point" in object:
             name = object['name']
@@ -171,13 +174,13 @@ def serialize_objects_layer(level, objects):
             # Always facing right
             return [serialize_record({'position': Vec2(p), 'side':  Identity("1"), 'type_': type_})]
 
-        # In the end assume a rectangle object, which is intended as a platform 
+        # In the end assume a rectangle object, which is intended as a platform
 
         else:
             originX, originY = convert_rect_position(order, level_w, level_h, object['width'], object['height'], object['x'], object['y'])
             w = object['width']
             h = object['height']
-            return [serialize_record({'position': Vec2((originX, originY)), "width": int(w),  'height': int(h), 'maxOffset': get_property(object, "maxOffset", 100), 'period': get_property(object, "period", 5)})]
+            return [serialize_record({'startPosition': Vec2((originX, originY)), "width": int(w),  'height': int(h), 'offset': get_property(object, "offset", Vec2((0, 100))), 'period': get_property(object, "period", 5)})]
 
     all_points = []
     for object in objects:
@@ -207,7 +210,7 @@ def is_object_layer(layer):
 
 
 def is_visible(layer):
-    return layer['visible'] == True
+    return layer['visible'] is True
 
 
 def serialize(name, level):
@@ -232,15 +235,25 @@ def convert_polygon_position(origin_x, origin_y, x, y):
     # X and Y are relative to origin
     return origin_x + x, origin_y - y
 
-
 def get_property(obj, name, default):
     """Look up for property name"""
     for index, prop in enumerate(obj["properties"]):
         if prop["name"] == name:
             try:
-                # Grab the first
-                return obj["properties"][index]["value"]
-            except KeyError as ex:
+                type_ = obj["properties"][index]["type"]
+                if type_ in ["int", "float"]:                
+                    # Return as-is
+                    return obj["properties"][index]["value"]
+                else:
+                    # Try to match a 2D vector first
+                    s = obj["properties"][index]["value"]
+                    match = RE_VECTOR.match(s)
+                    if match:
+                        v = (int(match.group(1)), int(match.group(2)))  
+                        return Vec2(v)
+                    else:
+                        return s
+            except KeyError:
                 return default
     else:
         return default

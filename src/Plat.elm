@@ -15,17 +15,17 @@ type alias Platform =
     { remainder : Vec2
     , position : Vec2
     , startPosition : Vec2
-    , offset: Vec2
+    , offset : Vec2
     , v : Vec2
     , width : Float
     , height : Float
+    , period : Float
     }
 
 
 type alias PlatformSpawn =
     { startPosition : Vec2
-    --, stopPosition : Vec2
-    , offset: Vec2    
+    , offset : Vec2
     , width : Float
     , height : Float
     , period : Float
@@ -39,10 +39,11 @@ fromSpawns spawns =
             { remainder = Vector2.zero
             , position = spawn_.startPosition
             , startPosition = spawn_.startPosition
-            , offset = spawn_.offset   
+            , offset = spawn_.offset
             , v = Vector2.scale (1 / spawn_.period) spawn_.offset
             , width = spawn_.width
             , height = spawn_.height
+            , period = spawn_.period
             }
         )
         spawns
@@ -55,13 +56,14 @@ update dt platform =
             Vector2.length (Vector2.sub platform.startPosition platform.position)
 
         v =
-            -- Top? 
+            -- Top?
             if d > Vector2.length platform.offset then
+                -- Go back to start position
                 Vector2.negate platform.v
 
-            -- Start?
-            else if d == 0 then
-                Vector2.negate platform.v
+            else if d < 1 then
+                -- Start again
+                Vector2.negate platform.v  --Vector2.scale (1 / platform.period) platform.offset 
 
             else
                 platform.v

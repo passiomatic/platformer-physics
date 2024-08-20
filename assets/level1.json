@@ -1,5 +1,13 @@
 { "backgroundcolor":"#66ccff",
  "compressionlevel":-1,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"json",
+         "target":"level1..tmj"
+        }
+    },
  "height":30,
  "infinite":false,
  "layers":[
@@ -258,7 +266,7 @@
                         {
                          "name":"offset",
                          "type":"string",
-                         "value":"0;100"
+                         "value":"0;150"
                         }, 
                         {
                          "name":"period",
@@ -278,9 +286,9 @@
                  "name":"Plat2",
                  "properties":[
                         {
-                         "name":"maxOffset",
-                         "type":"int",
-                         "value":-100
+                         "name":"offset",
+                         "type":"string",
+                         "value":"0;-100"
                         }, 
                         {
                          "name":"period",
