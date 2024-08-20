@@ -20,6 +20,7 @@ type alias Memory =
     , lastLogTime : Int
     , lastVelocity : Vec2
     , lastContact : Vec2
+
     -- , distance : Float
     }
 
@@ -34,6 +35,7 @@ initialModel =
     , lastLogTime = 0
     , lastVelocity = Vector2.zero
     , lastContact = Vector2.zero
+
     -- , distance = 0
     }
 
@@ -73,6 +75,7 @@ renderPhysics memory =
         , Diagnostic.vector yellow "lastContact" memory.lastContact
             |> moveDown 100
             |> moveRight 150
+
         -- , Diagnostic.vector yellow "d" (Vec2 0 memory.distance)
         --     |> moveDown 100
         --     |> moveRight 350
@@ -93,7 +96,7 @@ renderScene debug walls platforms entities =
         platforms_ =
             List.map
                 (\platform ->
-                    Diagnostic.hitbox platform
+                    renderPlatform debug platform
                 )
                 platforms
 
@@ -142,6 +145,19 @@ renderGem debug entity =
         |> move entity.position.x entity.position.y
     ]
         |> Diagnostic.consIf debug (Diagnostic.hitbox entity)
+        |> group
+
+
+renderPlatform debug platform =
+    let
+        p =
+            { p1 = Vec2 (platform.position.x - platform.width / 2) (platform.position.y + platform.height / 2)
+            , p2 = Vec2 (platform.position.x + platform.width / 2) (platform.position.y + platform.height / 2)
+            }
+    in
+    [ Diagnostic.hitbox platform
+    ]
+        |> Diagnostic.consIf debug (Diagnostic.segment darkGray p)
         |> group
 
 
@@ -201,7 +217,10 @@ update computer memory =
         |> resolveContacts newContacts
         |> updateCamera computer dt
         |> logPlayerValues computer
-        --|> logPlatformValues computer
+
+
+
+--|> logPlatformValues computer
 
 
 resolveContacts contacts memory =
@@ -230,6 +249,7 @@ logPlayerValues computer memory =
         memory
 
 
+
 -- logPlatformValues computer memory =
 --     if memory.debug && (computer.time.now - memory.lastLogTime > logTimeInterval) then
 --         List.foldl
@@ -244,7 +264,6 @@ logPlayerValues computer memory =
 --             )
 --             memory
 --             memory.platforms
-
 --     else
 --         memory
 

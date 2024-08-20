@@ -3,6 +3,7 @@ module Diagnostic exposing
     , hitbox
     , vector
     , wall
+    , segment
     )
 
 import AltMath.Vector2 as Vec2 exposing (Vec2, vec2)
