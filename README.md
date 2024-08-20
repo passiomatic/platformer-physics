@@ -4,13 +4,13 @@
 
 This is a proof-of-concept application to explore several concepts described by Maddy Thorson's post [_Celeste and TowerFall Physics_][c].
 
-All the physics in the system are handled by two types: `Wall` and `Entity`. Walls are the collidable level geometry. Entities are physics objects, such as players, arrows, monsters, treasure chests, etc. 
+All the physics in the system are handled by three types: `Wall`, `Platform` and `Entity`. Walls are the collidable level geometry, platforms are essentially 'moving walls', while entities are physics objects, such as players, treasure chest, monsters, etc. 
 
-Anything that has to move and interact with the level geometry is an entity. The system has a few simple constraints:
+The system has few simple constraints:
 
 * All colliders are axis-aligned bounding boxes (AABBs)
 * All collider positions, widths, and heights are integer numbers
-* Walls do not interact with other walls
+* Walls do not interact with other walls and platforms do not interact with other platforms
 
 For this demo the game graphics and logic have been kept to a minimun to focus on entity movement and collision detection/response. 
 
